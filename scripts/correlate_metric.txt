@@ -1,0 +1,7 @@
+python correlation_VP.py ^
+  -m TMQ_NR_4VP_example ^
+  -v 4 ^
+  -vm Y_fixed_0.3 ^
+  -rm New_Render ^
+  -db TMQ ^
+  --out_root ./out
