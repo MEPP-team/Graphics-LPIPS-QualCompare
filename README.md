@@ -14,6 +14,11 @@ Instead of predicting similarity between isolated 2D image patches only, this re
 This repository is based on the Graphics-LPIPS research line introduced in the paper:
 [Textured Mesh Quality Assessment: Large-Scale Dataset and Deep Learning-based Quality Metric](https://yananehme.github.io/publications/2022-ACM-TOG)
 
+## Quick Links
+
+- Quick metric usage: [QUICKSTART_METRIC.md](QUICKSTART_METRIC.md)
+- Command templates: [scripts/README.md](scripts/README.md)
+
 ## Repository Focus
 
 The current public codebase is organized around three main entrypoints:
