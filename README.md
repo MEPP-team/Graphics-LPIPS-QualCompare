@@ -40,7 +40,7 @@ pip install -r requirements.txt
 Clone the repository:
 
 ```bash
-git clone <your-public-repository-url>
+git clone https://gitlab.liris.cnrs.fr/gcampagne/graphics-lpips-qualcompare
 cd Graphics-LPIPS-QualCompare
 ```
 
