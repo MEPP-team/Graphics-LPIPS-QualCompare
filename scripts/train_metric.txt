@@ -1,16 +1,9 @@
 python train.py ^
-  --datasets ./dataset/TMQ/folds/TMQ_train_k0.csv ^
-  --testcsv ./dataset/TMQ/folds/TMQ_test_k0.csv ^
-  --src_root D:/RenderedDatasets/TMQ/New_Render/Y_fixed_0.3 ^
-  --root_refPatches Source/4VP ^
-  --root_distPatches Distorted/4VP ^
-  --name TMQ_NR_4VP_example ^
+  --name TMQ_<N>VP_example ^
+  --use_folds ^
+  --src_root D:/<PATH_TO_RENDERED_DATASETS>/<VIEWING_METHOD> ^
+  --datasets ./dataset/TMQ/folds/TexturedDB_80%%_TrainList_withnbPatchesPerVP_threth0.6.csv ^
+  --testcsv ./dataset/TMQ/folds/TexturedDB_20%%_TestList_withnbPatchesPerVP_threth0.6.csv ^
+  --root_refPatches Source/<N>VP ^
+  --root_distPatches Distorted/<N>VP ^
   --target mos ^
-  --net alex ^
-  --npatches 150 ^
-  --nInputImg 4 ^
-  --nepoch 5 ^
-  --nepoch_decay 5 ^
-  --lr 0.0001 ^
-  --testset_freq 2 ^
-  --use_gpu

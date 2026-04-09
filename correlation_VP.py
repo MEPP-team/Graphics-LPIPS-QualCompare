@@ -401,7 +401,6 @@ def calculate_correlation_all_vps_combined(base_dir, batchname, output_csv='glob
 def main():
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-    parser.add_argument('--use_gpu', action='store_true', default=True, help='turn on flag to use GPU')
     parser.add_argument('--version', type=str, default='0.1')
     parser.add_argument('-m', '--model', type=str, required=True)
     parser.add_argument('--use_folds', action='store_true')

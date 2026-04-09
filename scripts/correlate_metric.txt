@@ -1,7 +1,8 @@
 python correlation_VP.py ^
-  -m TMQ_NR_4VP_example ^
-  -v 4 ^
-  -vm Y_fixed_0.3 ^
-  -rm New_Render ^
+  -m TMQ_<N>VP_example ^
+  --use_folds ^ # If you used folds for training
+  -v <N> ^
+  -vm <View_Method> ^
+  -rm <Render_Method> ^
   -db TMQ ^
   --out_root ./out

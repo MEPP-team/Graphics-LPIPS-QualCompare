@@ -52,7 +52,7 @@ python Light_GraphicsLPIPS_csv.py ^
   -rm New_Render ^
   -db TMQ ^
   -mos ./dataset/TMQ/TMQ_MOS.csv ^
-  -testlist ./dataset/TMQ/folds/TMQ_test_k0.csv ^
+  -testlist ./dataset/TMQ/folds/TexturedDB_20%_TestList_withnbPatchesPerVP_threth0.6_k0.csv ^
   --src_root D:/RenderedDatasets/TMQ/New_Render/Y_fixed_0.3 ^
   --use_gpu
 ```
