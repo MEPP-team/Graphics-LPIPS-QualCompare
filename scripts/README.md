@@ -27,11 +27,39 @@ The helper script `revalidate_table_qualcompare.bat` now runs a full pipeline:
 
 Main configuration variables in the script:
 
+- `RENDERS_ROOT`: single root folder for all QualCompare outputs (generic/shared setup)
 - `SRC_ROOT`: QualCompare render root (must contain `Source/<N>VP` and `Distorted/<N>VP`)
 - `RUN_TRAINING`: `1` to train before evaluation, `0` to reuse existing checkpoints
 - `KEEP_ONLY_LATEST`: `1` to remove epoch snapshots and keep only `latest_net_.pth`
 - `USE_FOLDS`: `1` for k-fold mode, `0` for single split mode
 - `USE_GPU`: enables `--use_gpu` in evaluation
+
+Path setup for sharing the script:
+
+- Keep presets free of machine-specific absolute paths.
+- Set `RENDERS_ROOT` once in the script.
+- Leave `SRC_ROOT` empty to auto-build:
+  `SRC_ROOT = <RENDERS_ROOT>/<DATABASE>/<RENDER_METHOD>/<VIEW_METHOD>`
+- Optional: define environment variable `QUALCOMPARE_OUT_ROOT` to override `RENDERS_ROOT` without editing the script.
+
+Meaning used in this repository:
+
+- `5-fold`: training and validation on the same dataset using that dataset fold split
+- `zero-shot`: evaluate `TMQ_NR_8VP_yf03_kfolds` directly on a target dataset without retraining on that target dataset
+
+Preset layout in the script (7 presets):
+
+- TMQ 5-fold
+- TSMD 5-fold
+- TSMD zero-shot
+- SJTU-TMQA 5-fold
+- SJTU-TMQA zero-shot
+- BASICS 5-fold (4 views)
+- BASICS zero-shot
+
+Specific note for BASICS:
+
+- BASICS 5-fold training is configured with `VIEWS=4` in the BASICS 5-fold preset
 
 TMQ fold CSV naming used by the current script:
 
@@ -51,6 +79,23 @@ Typical run sequence:
 scripts\revalidate_table_qualcompare.bat --dry-run
 scripts\revalidate_table_qualcompare.bat
 ```
+
+Optional preset selection from command line (no file edits needed):
+
+```cmd
+scripts\revalidate_table_qualcompare.bat --dry-run --preset SJTU_TMQA_ZEROSHOT
+scripts\revalidate_table_qualcompare.bat --preset TMQ_5FOLD
+```
+
+Available preset names:
+
+- `TMQ_5FOLD`
+- `TSMD_5FOLD`
+- `TSMD_ZEROSHOT`
+- `SJTU_TMQA_5FOLD`
+- `SJTU_TMQA_ZEROSHOT`
+- `BASICS_5FOLD_4VP`
+- `BASICS_ZEROSHOT`
 
 These examples use Windows `cmd` line continuation with `^`.
 
