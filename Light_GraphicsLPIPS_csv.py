@@ -108,7 +108,8 @@ for fold_idx, ref_obj_list in enumerate(ref_obj_list_folds):
         print("--- Starting fold k%d ---" % fold_idx)
 
     for ref_obj in ref_obj_list:
-        ref_views_folder = root_refPatches + "/" + ref_obj + "/views"
+        ref_obj_root = os.path.join(root_refPatches, ref_obj)
+        ref_views_folder = os.path.join(ref_obj_root, "views")
         distorted_obj_list = find_dis_ref.find_dis_files(root_disPatches, ref_obj)
         currentFolder = output_folds[fold_idx] + ref_obj + "/"
 
@@ -129,8 +130,13 @@ for fold_idx, ref_obj_list in enumerate(ref_obj_list_folds):
             List_GraphicsLPIPS = []
             outcsvfile = currentFolder + distorted_obj + "_LGLPIPS_scores.csv"
 
-            dis_views_folder = root_disPatches + "/" + distorted_obj + "/views"
-            csv_patch_file = find_dis_ref.find_ref_csvfiles(root_refPatches + ref_obj)[0]
+            dis_views_folder = os.path.join(root_disPatches, distorted_obj, "views")
+            csv_patch_files = find_dis_ref.find_ref_csvfiles(ref_obj_root)
+            if not csv_patch_files:
+                raise FileNotFoundError(
+                    f"No patch CSV found under {ref_obj_root}. Expected a reference patchlist CSV in the QualCompare output tree."
+                )
+            csv_patch_file = csv_patch_files[0]
             List_MOS.append([correlation_VP.get_MOS(mos_csv_file, distorted_obj, name_col=0, mos_col=1)])
 
             with open(csv_patch_file) as csv_file:

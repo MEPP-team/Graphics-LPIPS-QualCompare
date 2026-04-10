@@ -263,10 +263,11 @@ The `scripts/` directory contains command templates that can be copied and adapt
 - `scripts/train_metric.txt`
 - `scripts/evaluate_metric.txt`
 - `scripts/correlate_metric.txt`
+- `scripts/revalidate_table_qualcompare.bat` (train + evaluate + correlate for paper-table revalidation)
 
 See also:
 
-- `scripts/README.md` for notes on placeholders, shell syntax, and expected rendered structure
+- `scripts/README.md` for notes on placeholders, shell syntax, expected rendered structure, and full `revalidate_table_qualcompare.bat` specifications
 
 ## Quick Patch-Level Example
 
