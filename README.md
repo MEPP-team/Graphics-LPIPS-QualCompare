@@ -18,6 +18,7 @@ This repository is based on the Graphics-LPIPS research line introduced in the p
 
 - Quick metric usage: [QUICKSTART_METRIC.md](QUICKSTART_METRIC.md)
 - Command templates: [scripts/README.md](scripts/README.md)
+- Revalidation helper: [scripts/revalidate_table_qualcompare.bat](scripts/revalidate_table_qualcompare.bat)
 
 ## Repository Focus
 
@@ -48,12 +49,19 @@ cd Graphics-LPIPS-QualCompare
 
 This metric is only meaningful when used with the associated textured mesh quality dataset. The repository does not ship the dataset itself.
 
+You need two complementary inputs depending on what you want to do:
+
+- the object datasets used as the source for validation and rendering
+- the rendered image dataset used directly by the metric workflow
+
 The recommended workflow is now:
 
 1. Download the main textured mesh quality dataset:
    https://datasets.liris.cnrs.fr/textured-mesh-quality-assessment-dataset-version1
-2. Render the dataset objects and generate patch metadata with the companion tool `QualCompare`.
-3. Train or evaluate Graphics-LPIPS-QualCompare on the rendered outputs.
+2. Download the rendered image dataset used for revalidation and evaluation:
+  https://datasets.liris.cnrs.fr/qualcomparerendered-version1
+3. If you prefer to regenerate the rendered images yourself, use the companion tool `QualCompare` together with the relevant object datasets for validation.
+4. Train or evaluate Graphics-LPIPS-QualCompare on the rendered outputs.
 
 The historical patchified archive from the original project is no longer the primary path for this fork. It is mostly useful for compatibility with the older workflow:
 
@@ -141,6 +149,14 @@ At minimum:
 If a public demo checkpoint is provided, it becomes possible to test the full evaluation pipeline without retraining a model first.
 
 ## Typical Workflow
+
+### 0. Revalidate or reproduce an experiment
+
+If your goal is mainly to rerun a published or previous experience, start here:
+
+1. Make sure the rendered image dataset is available locally, or regenerate it with `QualCompare` from the object datasets you want to validate.
+2. Check [scripts/README.md](scripts/README.md) for the revalidation command templates.
+3. Run [scripts/revalidate_table_qualcompare.bat](scripts/revalidate_table_qualcompare.bat) with `--dry-run` first, then remove `--dry-run` once the configuration matches your setup.
 
 ### 1. Prepare the rendered dataset
 

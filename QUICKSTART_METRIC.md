@@ -2,6 +2,8 @@
 
 This page is the fastest way to run Graphics-LPIPS-QualCompare on rendered data produced by QualCompare.
 
+If your goal is mainly to reproduce a previous experiment, start with [scripts/revalidate_table_qualcompare.bat](scripts/revalidate_table_qualcompare.bat) and the notes in [scripts/README.md](scripts/README.md).
+
 ---
 
 ## 1. Install dependencies
@@ -13,6 +15,12 @@ pip install -r requirements.txt
 ```
 
 If you use a GPU, install a PyTorch build that matches your CUDA setup before running the command above.
+
+To reproduce the validation workflow, make sure you also have the rendered image dataset locally:
+
+- https://datasets.liris.cnrs.fr/qualcomparerendered-version1
+
+If you prefer to rebuild the rendered inputs, use `QualCompare` with the relevant object datasets for validation.
 
 ---
 
