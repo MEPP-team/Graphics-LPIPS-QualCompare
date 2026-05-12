@@ -5,7 +5,9 @@ __pycache__/
 .vs/
 
 out/
-checkpoints/
+checkpoints/*
+!checkpoints/TMQ_NR_8VP_yf03_kfolds/
+!checkpoints/TMQ_NR_8VP_yf03_kfolds/**
 
 
 *.png

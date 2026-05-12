@@ -312,6 +312,118 @@ python GraphicsLpips_2imgs.py \
 - The current workflow assumes that rendered views and patch metadata come from the companion `QualCompare` pipeline.
 - `dataset/`, `checkpoints/`, and `out/` are runtime resources and are not committed here.
 
+## Paper Results Reproduction
+
+This repository includes the pre-trained checkpoint `TMQ_NR_8VP_yf03_kfolds`, which enables direct evaluation of Graphics-LPIPS-QualCompare on new datasets without retraining.
+
+### Quick Start for Paper Reproduction
+
+The easiest way to reproduce paper results is using the helper script:
+
+```bash
+# First, set RENDERS_ROOT in the script to point to your QualCompare renders
+scripts\revalidate_table_qualcompare.bat --dry-run
+
+# Then edit the script and run without --dry-run
+scripts\revalidate_table_qualcompare.bat
+```
+
+### Zero-Shot Evaluation Workflow
+
+To evaluate the pre-trained `TMQ_NR_8VP_yf03_kfolds` checkpoint on a custom dataset:
+
+1. **Prepare rendered views** with QualCompare from your 3D objects
+2. **Structure rendered data** according to the expected layout (see below)
+3. **Run evaluation** with `Light_GraphicsLPIPS_csv.py`
+4. **Compute correlations** with `correlation_VP.py`
+
+### Expected Image Directory Hierarchy
+
+The metric expects rendered images organized in a specific structure:
+
+```
+<SRC_ROOT>/
+├── Source/
+│   ├── 8VP/                          # Number of views must match -v argument
+│   │   ├── reference_obj_1/
+│   │   │   ├── views/
+│   │   │   │   ├── view_1.png
+│   │   │   │   ├── view_2.png
+│   │   │   │   └── ...
+│   │   │   └── patchs/
+│   │   │       └── reference_obj_1_patchlist.csv
+│   │   ├── reference_obj_2/
+│   │   │   └── ...
+│   │   └── ...
+│   └── <OTHER_VP>/                  # e.g., 4VP for 4-view models
+│       └── ...
+│
+└── Distorted/
+    ├── 8VP/
+    │   ├── distorted_obj_1_v1/
+    │   │   └── views/
+    │   │       ├── view_1.png
+    │   │       ├── view_2.png
+    │   │       └── ...
+    │   ├── distorted_obj_1_v2/
+    │   │   └── ...
+    │   └── ...
+    └── <OTHER_VP>/
+        └── ...
+```
+
+**Important notes:**
+
+- Use `patchs/` (not `patches/`) — this is the folder name expected by the code
+- Patch CSV files are only required in Source, not in Distorted
+- The number of views (e.g., `8VP`) must match the `-v` argument in evaluation commands
+- Images must be PNG format
+- All objects under the same `<N>VP` folder must have the same number of views
+
+### Example: Evaluate on Custom Data
+
+```bash
+# Set up your rendered structure at, e.g., D:\MyRenders
+# Then run:
+
+python Light_GraphicsLPIPS_csv.py ^
+  -m TMQ_NR_8VP_yf03_kfolds ^
+  -v 8 ^
+  -vm Y_fixed_0.3 ^
+  -rm New_Render ^
+  -db CustomDB ^
+  -mos ./dataset/CustomDB/mos_scores.csv ^
+  -testlist ./dataset/CustomDB/test_list.csv ^
+  --src_root D:\MyRenders ^
+  --use_gpu
+```
+
+Then compute correlations:
+
+```bash
+python correlation_VP.py ^
+  -m TMQ_NR_8VP_yf03_kfolds ^
+  -v 8 ^
+  -vm Y_fixed_0.3 ^
+  -rm New_Render ^
+  -db CustomDB ^
+  --out_root ./out
+```
+
+### Dataset CSV Format
+
+- **MOS CSV** (`-mos`): Required format with columns `[object_name, mos_score]`
+- **Test List** (`-testlist`): Required format with columns `[object_name]` or similar, listing objects to evaluate
+
+### Checkpoint Details
+
+`TMQ_NR_8VP_yf03_kfolds`:
+- Trained on the Textured Mesh Quality (TMQ) dataset
+- Uses 8 views per object (`8VP`)
+- Fixed Y camera angle with 0.3 units height offset
+- Contains multiple fold checkpoints for k-fold validation
+- Weights can be found in `./checkpoints/TMQ_NR_8VP_yf03_kfolds/fold_k*/latest_net_.pth`
+
 ## Acknowledgements
 
 This work was supported by the French National Research Agency as part of the ANR-PISCo project (ANR-17-CE33-0005).
