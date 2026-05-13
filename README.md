@@ -14,6 +14,9 @@ Instead of predicting similarity between isolated 2D image patches only, this re
 This repository is based on the Graphics-LPIPS research line introduced in the paper:
 [Textured Mesh Quality Assessment: Large-Scale Dataset and Deep Learning-based Quality Metric](https://yananehme.github.io/publications/2022-ACM-TOG)
 
+This workflow is also associated with the QualCompare revalidation paper:
+*Towards Reproducible Image-based 3D quality assessment: integrated software and new results*.
+
 ## Quick Links
 
 - Quick metric usage: [QUICKSTART_METRIC.md](QUICKSTART_METRIC.md)
@@ -161,6 +164,7 @@ If your goal is mainly to rerun a published or previous experience, start here:
 ### 1. Prepare the rendered dataset
 
 Download the main textured mesh dataset, then use `QualCompare` to render the reference and distorted objects and generate the patch metadata consumed by this repository.
+Don't forget to use the dataset structure described above.
 
 ### 2. Train a model
 
@@ -312,11 +316,11 @@ python GraphicsLpips_2imgs.py \
 - The current workflow assumes that rendered views and patch metadata come from the companion `QualCompare` pipeline.
 - `dataset/`, `checkpoints/`, and `out/` are runtime resources and are not committed here.
 
-## Paper Results Reproduction
+## QualCompare Revalidation
 
-This repository includes the pre-trained checkpoint `TMQ_NR_8VP_yf03_kfolds`, which enables direct evaluation of Graphics-LPIPS-QualCompare on new datasets without retraining.
+This repository includes the pre-trained checkpoint `TMQ_NR_8VP_yf03_kfolds`, which enables direct evaluation of Graphics-LPIPS-QualCompare on new datasets without retraining. This is the checkpoint used for the QualCompare revalidation workflow associated with *Towards Reproducible Image-based 3D quality assessment: integrated software and new results*.
 
-### Quick Start for Paper Reproduction
+### Quick Start for Revalidation
 
 The easiest way to reproduce paper results is using the helper script:
 
@@ -424,11 +428,9 @@ python correlation_VP.py ^
 - Contains multiple fold checkpoints for k-fold validation
 - Weights can be found in `./checkpoints/TMQ_NR_8VP_yf03_kfolds/fold_k*/latest_net_.pth`
 
-## Acknowledgements
-
-This work was supported by the French National Research Agency as part of the ANR-PISCo project (ANR-17-CE33-0005).
-
 ## Reference
+
+Gautier Campagne, Florent Dupont, Guillaume Lavoué, Florence Denis, Johanna Delanoy, "Towards Reproducible Image-based 3D quality assessment: integrated software and new results".
 
 Yana Nehme, Johanna Delanoy, Florent Dupont, Jean-Philippe Farrugia, Patrick Le Callet, Guillaume Lavoue, "Textured Mesh Quality Assessment: Large-Scale Dataset and Deep Learning-based Quality Metric".
 

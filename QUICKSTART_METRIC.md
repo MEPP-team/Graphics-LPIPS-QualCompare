@@ -1,8 +1,8 @@
-# Quick Metric Usage
+## Quick Metric Usage
 
 This page is the fastest way to run Graphics-LPIPS-QualCompare on rendered data produced by QualCompare.
 
-If your goal is mainly to reproduce a previous experiment, start with [scripts/revalidate_table_qualcompare.bat](scripts/revalidate_table_qualcompare.bat) and the notes in [scripts/README.md](scripts/README.md).
+If your goal is mainly to reproduce the QualCompare revalidation for *Towards Reproducible Image-based 3D quality assessment: integrated software and new results*, start with [scripts/revalidate_table_qualcompare.bat](scripts/revalidate_table_qualcompare.bat) and the notes in [scripts/README.md](scripts/README.md).
 
 ---
 
