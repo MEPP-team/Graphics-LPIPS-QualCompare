@@ -1,5 +1,11 @@
 # Command Templates
 
+**Related docs:**
+- [Quick metric usage](../QUICKSTART_METRIC.md)
+- [Paper reproduction guide](../PAPER_REPRODUCTION_QUICKSTART.md)
+
+---
+
 The files in this directory are ready-to-adapt command templates for the main Graphics-LPIPS workflow.
 
 Files:

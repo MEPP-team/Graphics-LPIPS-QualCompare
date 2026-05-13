@@ -4,25 +4,14 @@ def find_ref_csvfiles(root_refPatches):
     # Root_ref_patches = '..../out/dataset_ref_method_XVP_NNNN/'
     # The objective is to find all the .csv files of the patchified reference images
     # We return a list of the paths of the .csv files
-    # The architecture of the folders is as follows:
-    
-    # root_refPatches
-    # ├── obj_1
-    # │   ├── views
-    # │   │   ├── view_1.jpg
-    # │   │   ├── view_2.jpg
-    # │   │   ├── ...
-    # │   ├── masks
-    # |   ├── |── view_1.jpg
-    # │   ├── |── view_2.jpg
-    # │   ├── |── ...
-    # │   ├── patches
-    # │   │   ├── obj_1_patchlist.csv
-    # │   │   ├── view_1_patchified.jpg
-    # │   │   ├── view_2_patchified.jpg
-    # │   │   ├── ...
-    # ├── obj_2
-    #...
+    # Example folder structure:
+    # root_refPatches/
+    #   obj_1/
+    #     views/
+    #     masks/
+    #     patches/
+    #   obj_2/
+    #   ...
 
     ref_csv_files = []
     for root, dirs, files in os.walk(root_refPatches):
@@ -36,19 +25,13 @@ def find_dis_files(root_disPatches, ref_obj_name):
     # Returns a list of the names of the distorted obj
     
     
-    # The architecture of the folders is as follows:
-    # root_distPatches
-    # ├── obj_1_dis_1
-    # │   ├── views
-    # │   │   ├── view_1.jpg
-    # │   │   ├── view_2.jpg
-    # │   │   ├── ...
-    # │   ├── masks
-    # |   ├── |── view_1.jpg
-    # │   ├── |── view_2.jpg
-    # │   ├── |── ...
-    # ├── obj_1_dis_2
-    #...
+    # Example folder structure:
+    # root_distPatches/
+    #   obj_1_dis_1/
+    #     views/
+    #     masks/
+    #   obj_1_dis_2/
+    #   ...
 
     # We get the list of the names of the objects in the root_distPatches folder
     # So we find the name of the distorted objects by searching the name of the reference object in the root_distPatches folder.
@@ -68,19 +51,13 @@ def find_ref_files(root_refPatches):
     # Returns a list of the names of the reference obj
         
     
-    # The architecture of the folders is as follows:
-    # root_refPatches
-    # ├── obj_1
-    # │   ├── views
-    # │   │   ├── view_1.jpg
-    # │   │   ├── view_2.jpg
-    # │   │   ├── ...
-    # │   ├── masks
-    # |   ├── |── view_1.jpg
-    # │   ├── |── view_2.jpg
-    # │   ├── |── ...
-    # ├── obj_2
-    #...
+    # Example folder structure:
+    # root_refPatches/
+    #   obj_1/
+    #     views/
+    #     masks/
+    #   obj_2/
+    #   ...
 
     # We only need to get the folder names of the root_refPatches folder
 
