@@ -154,14 +154,6 @@ When evaluating with k-fold checkpoints (`TMQ_NR_8VP_yf03_kfolds`), you'll get:
 - Use **CSV values (mean)** for cross-validation reporting and reproducibility
 - Use **plot values** for visualizing global trend and quality of fit across all data
 
-### Quality Assessment Guidelines
-
-- **Pearson ≥ 0.80**: Excellent correlation with subjective quality
-- **Pearson 0.70-0.80**: Good correlation, suitable for ranking
-- **Pearson < 0.70**: Moderate correlation, use with caution
-
-The `TMQ_NR_8VP_yf03_kfolds` checkpoint achieves ~0.81 mean Pearson, indicating strong correlation with subjective MOS scores.
-
 ### Reference to Publication Results
 
 These exact results are reported in **Table VI** of:
