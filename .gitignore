@@ -23,5 +23,11 @@ checkpoints/*
 *.json
 *.log
 
+# Local-only revalidation helpers and scripts
+revalidation_common.py
+revalidate_lpips.py
+revalidate_ssim.py
+ssim.py
+
 .DS_Store
 Thumbs.db
