@@ -19,7 +19,8 @@ This workflow is also associated with the QualCompare revalidation paper:
 
 ## Quick Links
 
-- Quick metric usage: [QUICKSTART_METRIC.md](QUICKSTART_METRIC.md)
+- **Paper reproduction guide**: [PAPER_REPRODUCTION_QUICKSTART.md](PAPER_REPRODUCTION_QUICKSTART.md) - Full revalidation workflow and results interpretation
+- Quick metric usage: [QUICKSTART_METRIC.md](QUICKSTART_METRIC.md) - Fast setup for custom datasets
 - Command templates: [scripts/README.md](scripts/README.md)
 - Revalidation helper: [scripts/revalidate_table_qualcompare.bat](scripts/revalidate_table_qualcompare.bat)
 
@@ -378,7 +379,7 @@ The metric expects rendered images organized in a specific structure:
 
 **Important notes:**
 
-- Use `patchs/` (not `patches/`) — this is the folder name expected by the code
+- Use `patchs/` (not `patches/`): this is the folder name expected by the code
 - Patch CSV files are only required in Source, not in Distorted
 - The number of views (e.g., `8VP`) must match the `-v` argument in evaluation commands
 - Images must be PNG format

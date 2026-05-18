@@ -167,7 +167,7 @@ class Trainer:
         self.var_p0 = Variable(self.p0,requires_grad=True)
     def _ensure_loss_tensor(self, loss: Any) -> torch.Tensor:
         if loss is None:
-            raise RuntimeError("loss_total is None – nothing to backprop.")
+            raise RuntimeError("loss_total is None - nothing to backprop.")
         if isinstance(loss, (list, tuple)):
             loss = sum(
                 l if isinstance(l, torch.Tensor) else torch.tensor(float(l), device=self.device)

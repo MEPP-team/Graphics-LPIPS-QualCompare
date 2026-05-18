@@ -1,4 +1,10 @@
-## Quick Metric Usage
+# Quick Metric Usage
+
+**Navigation:**
+- [Project overview](README.md)
+- [Paper reproduction guide](PAPER_REPRODUCTION_QUICKSTART.md) (for full revalidation)
+
+---
 
 This page is the fastest way to run Graphics-LPIPS-QualCompare on rendered data produced by QualCompare.
 
@@ -91,6 +97,12 @@ python correlation_VP.py ^
 - If GPU errors occur, run without `--use_gpu` or install a matching CUDA/PyTorch build.
 
 ---
+
+## Related Documentation
+
+- **Reproducing paper results**: [PAPER_REPRODUCTION_QUICKSTART.md](PAPER_REPRODUCTION_QUICKSTART.md) - Complete revalidation workflow with statistical interpretation
+- **Project overview**: [README.md](README.md) - Architecture and components
+- **Script templates**: [scripts/README.md](scripts/README.md) - Batch script usage
 
 ## Companion workflow note
 

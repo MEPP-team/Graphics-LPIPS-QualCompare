@@ -1,5 +1,11 @@
 # QualCompare Revalidation - Quick Start
 
+**Navigation:**
+- [Project overview](README.md)
+- [Quick metric usage guide](QUICKSTART_METRIC.md) (for custom datasets)
+
+---
+
 This guide walks you through reproducing the QualCompare revalidation results using the pre-trained checkpoint.
 
 ## Prerequisites
