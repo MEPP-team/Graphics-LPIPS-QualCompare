@@ -41,6 +41,28 @@ def normalize_name(name: str) -> str:
     name = re.sub(r'[^a-z0-9]', '', name)   # keep only alphanumerics
     return name
 
+
+def default_results_filename(model: str) -> str:
+    model_norm = normalize_name(model)
+    if model_norm.startswith("ssim"):
+        return "SSIM_results_testset.csv"
+    if model_norm.startswith("lpips"):
+        return "LPIPS_results_testset.csv"
+    return "GLPIPS_results_testset.csv"
+
+
+def resolve_results_csv(object_dir: str, results_filename: str):
+    csv_file = os.path.join(object_dir, results_filename)
+    if os.path.isfile(csv_file):
+        return csv_file
+
+    legacy_csv_file = os.path.join(object_dir, "GLPIPS_results_testset.csv")
+    if os.path.isfile(legacy_csv_file):
+        return legacy_csv_file
+
+    return None
+
+
 def logistic_4pl(x, b1, b2, b3, b4):
     return (b1 - b2) / (1.0 + np.exp(-(x - b3) / (abs(b4) + 1e-12))) + b2
 
@@ -271,7 +293,12 @@ def plot_scatter_logistic_multifold(
     else:
         plt.close()
 
-def calculate_correlation_all_vps_combined(base_dir, batchname, output_csv='global_combined_correlation.csv'):
+def calculate_correlation_all_vps_combined(
+    base_dir,
+    batchname,
+    output_csv='global_combined_correlation.csv',
+    results_filename='GLPIPS_results_testset.csv',
+):
     correlations = [("Object", "Pearson", "Spearman", "Slope", "CI_slope_lower", "CI_slope_upper", "Intercept", "R2")]
 
     def clamp01(a):
@@ -285,9 +312,9 @@ def calculate_correlation_all_vps_combined(base_dir, batchname, output_csv='glob
 
     for object_name in os.listdir(base_dir):
         object_dir = os.path.join(base_dir, object_name)
-        csv_file = os.path.join(object_dir, 'GLPIPS_results_testset.csv')
+        csv_file = resolve_results_csv(object_dir, results_filename)
 
-        if not os.path.isfile(csv_file):
+        if csv_file is None:
             continue
 
         with open(csv_file, mode='r') as f:
@@ -346,9 +373,9 @@ def calculate_correlation_all_vps_combined(base_dir, batchname, output_csv='glob
 
     for object_name in os.listdir(base_dir):
         object_dir = os.path.join(base_dir, object_name)
-        csv_file = os.path.join(object_dir, 'GLPIPS_results_testset.csv')
+        csv_file = resolve_results_csv(object_dir, results_filename)
 
-        if not os.path.isfile(csv_file):
+        if csv_file is None:
             continue
 
         with open(csv_file, mode='r') as f:
@@ -409,6 +436,12 @@ def main():
     parser.add_argument('-rm', '--render_method', type=str, required=True)
     parser.add_argument('-db', '--database', type=str, required=True)
     parser.add_argument('--out_root', type=str, default='./out', help='root directory containing evaluation outputs')
+    parser.add_argument(
+        '--results_file',
+        type=str,
+        default=None,
+        help='metric CSV filename inside each object folder; inferred from --model when omitted',
+    )
 
     opt = parser.parse_args()
 
@@ -421,6 +454,7 @@ def main():
     render_method = opt.render_method
     database = opt.database
     out_root = opt.out_root
+    results_filename = opt.results_file or default_results_filename(model)
 
     batchname = f"{model}_{database}_{render_method}_{view_method}_{testing_views}VP"
 
@@ -449,7 +483,11 @@ def main():
             )
             fold_batchname = batchname + '_fold' + str(fold_idx)
             print(f"\nProcessing fold {fold_idx} - Directory: {base_dir}")
-            p_corr, s_corr, fold_lpips, fold_mos= calculate_correlation_all_vps_combined(base_dir, fold_batchname)
+            p_corr, s_corr, fold_lpips, fold_mos = calculate_correlation_all_vps_combined(
+                base_dir,
+                fold_batchname,
+                results_filename=results_filename,
+            )
             pcors.append(p_corr)
             scores_pearson.append(p_corr)
             scores_spearman.append(s_corr)
@@ -497,7 +535,11 @@ def main():
             experiment_dir,
             "_METRIC_RESULTS_TESTSET_"
         )
-        p_corr, s_corr = calculate_correlation_all_vps_combined(base_dir, batchname)
+        p_corr, s_corr, _, _ = calculate_correlation_all_vps_combined(
+            base_dir,
+            batchname,
+            results_filename=results_filename,
+        )
         pcorr = p_corr
         scorr = s_corr
 
