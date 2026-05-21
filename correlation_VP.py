@@ -63,6 +63,10 @@ def resolve_results_csv(object_dir: str, results_filename: str):
     return None
 
 
+def should_invert_metric_scores(model: str) -> bool:
+    return normalize_name(model).startswith("ssim")
+
+
 def logistic_4pl(x, b1, b2, b3, b4):
     return (b1 - b2) / (1.0 + np.exp(-(x - b3) / (abs(b4) + 1e-12))) + b2
 
@@ -298,6 +302,7 @@ def calculate_correlation_all_vps_combined(
     batchname,
     output_csv='global_combined_correlation.csv',
     results_filename='GLPIPS_results_testset.csv',
+    invert_scores=False,
 ):
     correlations = [("Object", "Pearson", "Spearman", "Slope", "CI_slope_lower", "CI_slope_upper", "Intercept", "R2")]
 
@@ -319,7 +324,10 @@ def calculate_correlation_all_vps_combined(
 
         with open(csv_file, mode='r') as f:
             reader = csv.reader(f)
-            header = next(reader)
+            try:
+                next(reader)
+            except StopIteration:
+                continue
             mos_list = []
             lpips_all_vps = []
 
@@ -331,6 +339,8 @@ def calculate_correlation_all_vps_combined(
 
         mos_array = np.array(mos_list)
         lpips_array = clamp01(np.array(lpips_all_vps))
+        if invert_scores:
+            lpips_array = 1.0 - lpips_array
 
         # MOS: from [1, 5] to [0, 1], where 0 is best quality
         mos_array = normalize_mos(mos_array, method="autoInvert")
@@ -380,10 +390,19 @@ def calculate_correlation_all_vps_combined(
 
         with open(csv_file, mode='r') as f:
             reader = csv.reader(f)
-            next(reader)
+            try:
+                next(reader)
+            except StopIteration:
+                continue
             for row in reader:
                 mos = float(row[1])
-                lpips_vals = [float(x) for x in row[2:] if float(x) != 0.0]
+                lpips_vals = clamp01(np.array([float(x) for x in row[2:]], dtype=float))
+                if invert_scores:
+                    lpips_vals = 1.0 - lpips_vals
+                else:
+                    lpips_vals = np.array([x for x in lpips_vals if x != 0.0], dtype=float)
+                if lpips_vals.size == 0:
+                    continue
                 avg_lpips = np.mean(lpips_vals)
 
                 all_mos.append(mos)
@@ -455,6 +474,9 @@ def main():
     database = opt.database
     out_root = opt.out_root
     results_filename = opt.results_file or default_results_filename(model)
+    invert_scores = should_invert_metric_scores(model)
+    if invert_scores:
+        print("Interpreting SSIM as a distance for correlations: using 1 - SSIM.")
 
     batchname = f"{model}_{database}_{render_method}_{view_method}_{testing_views}VP"
 
@@ -487,6 +509,7 @@ def main():
                 base_dir,
                 fold_batchname,
                 results_filename=results_filename,
+                invert_scores=invert_scores,
             )
             pcors.append(p_corr)
             scores_pearson.append(p_corr)
@@ -539,6 +562,7 @@ def main():
             base_dir,
             batchname,
             results_filename=results_filename,
+            invert_scores=invert_scores,
         )
         pcorr = p_corr
         scorr = s_corr
