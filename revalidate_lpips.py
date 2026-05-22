@@ -14,7 +14,12 @@ from torchmetrics.image.lpip import LearnedPerceptualImagePatchSimilarity
 
 import correlation_VP
 import find_dis_ref
-from revalidation_common import get_ref_list_for_full_database, iter_view_patch_groups, metric_results_filename
+from revalidation_common import (
+    get_ref_list_for_full_database,
+    has_completed_results_file,
+    iter_view_patch_groups,
+    metric_results_filename,
+)
 
 
 def im2tensor_01_to_m11(image_rgb):
@@ -35,6 +40,7 @@ def main():
     parser.add_argument("-testlist", "--test_list_csv", type=str, default=None)
     parser.add_argument("--src_root", type=str, default=".")
     parser.add_argument("--use_gpu", action="store_true", default=True)
+    parser.add_argument("--force", action="store_true", help="recompute result files even if they already exist")
     args = parser.parse_args()
 
     model = args.model
@@ -79,6 +85,10 @@ def main():
         results_dir = output_dir + "_METRIC_RESULTS_TESTSET_/" + ref_obj + "/"
         os.makedirs(os.path.dirname(results_dir), exist_ok=True)
         results_file = results_dir + metric_results_filename("LPIPS")
+
+        if has_completed_results_file(results_file) and not args.force:
+            print(f"Skipping existing result file {results_file}")
+            continue
 
         print(f"Creating the file {results_file}")
         with open(results_file, "w", newline="") as file_lpips:

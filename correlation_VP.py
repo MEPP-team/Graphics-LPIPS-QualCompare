@@ -44,6 +44,10 @@ def normalize_name(name: str) -> str:
 
 def default_results_filename(model: str) -> str:
     model_norm = normalize_name(model)
+    if model_norm.startswith("weightedglpips") or model_norm.startswith("patchweightedglpips"):
+        return "WEIGHTED_GLPIPS_results_testset.csv"
+    if model_norm.startswith("ssimimages") or model_norm.startswith("ssimviews"):
+        return "SSIM_IMAGES_results_testset.csv"
     if model_norm.startswith("ssim"):
         return "SSIM_results_testset.csv"
     if model_norm.startswith("lpips"):
@@ -104,9 +108,19 @@ def get_MOS(MOSfile, distorted_obj_name, name_col, mos_col):
     with open(MOSfile, mode='r') as f:
         reader = csv.reader(f)
         header = next(reader, None)
+        if header:
+            normalized_header = [normalize_name(col) for col in header]
+            for candidate in ["stimulus", "objectname", "name", "ppc"]:
+                if candidate in normalized_header:
+                    name_col = normalized_header.index(candidate)
+                    break
+            for candidate in ["mos", "dmos"]:
+                if candidate in normalized_header:
+                    mos_col = normalized_header.index(candidate)
+                    break
 
         for row in reader:
-            if len(row) < 2:
+            if len(row) <= max(name_col, mos_col):
                 continue
             name_candidate = row[name_col]
             mos_candidate = row[mos_col]

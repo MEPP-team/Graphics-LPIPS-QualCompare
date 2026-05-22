@@ -19,6 +19,13 @@ def metric_results_filename(metric_name: str) -> str:
     return f"{metric_name}_results_testset.csv"
 
 
+def has_completed_results_file(path: str) -> bool:
+    if not os.path.isfile(path):
+        return False
+    with open(path, newline="") as f:
+        return sum(1 for _ in f) > 1
+
+
 def resolve_fold_testlist_path(database: str, test_list_csv: str, fold: int) -> str:
     basename = os.path.basename(test_list_csv)
     basename = re.sub(r"_k\d+(?=\.csv$)", "", basename)
