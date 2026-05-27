@@ -43,6 +43,12 @@ if errorlevel 1 goto :fail
 call :RunDataset BASICS 4 SP Y_fixed_0 ".\dataset\BASICS\MOS_CI.csv"
 if errorlevel 1 goto :fail
 
+call :RunDataset WPC 8 New_Render Y_fixed_0.3 ".\dataset\WPC\WPC_MOS.csv"
+if errorlevel 1 goto :fail
+
+call :RunDataset WPC2 8 New_Render Y_fixed_0.3 ".\dataset\WPC2\WPC2.0_MOS.csv"
+if errorlevel 1 goto :fail
+
 echo.
 echo [OK] Fixed baseline revalidation finished.
 popd >nul

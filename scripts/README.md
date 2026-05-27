@@ -53,7 +53,7 @@ Meaning used in this repository:
 - `5-fold`: training and validation on the same dataset using that dataset fold split
 - `zero-shot`: evaluate `TMQ_NR_8VP_yf03_kfolds` directly on a target dataset without retraining on that target dataset
 
-Preset layout in the script (7 presets):
+Preset layout in the script (11 presets):
 
 - TMQ 5-fold
 - TSMD 5-fold
@@ -62,6 +62,10 @@ Preset layout in the script (7 presets):
 - SJTU-TMQA zero-shot
 - BASICS 5-fold (4 views)
 - BASICS zero-shot
+- WPC 5-fold
+- WPC zero-shot
+- WPC2 5-fold
+- WPC2 zero-shot
 
 Specific note for BASICS:
 
@@ -102,6 +106,10 @@ Available preset names:
 - `SJTU_TMQA_ZEROSHOT`
 - `BASICS_5FOLD_4VP`
 - `BASICS_ZEROSHOT`
+- `WPC_5FOLD`
+- `WPC_ZEROSHOT`
+- `WPC2_5FOLD`
+- `WPC2_ZEROSHOT`
 
 These examples use Windows `cmd` line continuation with `^`.
 

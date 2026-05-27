@@ -164,6 +164,60 @@ rem set "TESTLIST_CSV=.\dataset\BASICS\MOS_CI_01.csv"
 rem set "USE_FOLDS=0"
 rem set "RUN_TRAINING=0"
 
+rem --- PRESET H: WPC, 5-fold
+rem set "RUN_NAME=WPC_5FOLD"
+rem set "MODEL_NAME=WPC_NR_8VP_yf03_kfolds"
+rem set "DATABASE=WPC"
+rem set "VIEWS=8"
+rem set "VIEW_METHOD=Y_fixed_0.3"
+rem set "RENDER_METHOD=New_Render"
+rem set "MOS_CSV=.\dataset\WPC\WPC_MOS.csv"
+rem set "TESTLIST_CSV=.\dataset\WPC\folds\WPC_MOS_test20.csv"
+rem set "USE_FOLDS=1"
+rem set "RUN_TRAINING=1"
+rem set "TRAIN_DATASETS=%REPO_ROOT%\dataset\WPC\folds\WPC_MOS_train80.csv"
+rem set "TRAIN_TESTCSV=%REPO_ROOT%\dataset\WPC\folds\WPC_MOS_test20.csv"
+rem set "TRAIN_TARGET=mos"
+
+rem --- PRESET I: WPC, zero-shot (TMQ model)
+rem set "RUN_NAME=WPC_ZEROSHOT"
+rem set "MODEL_NAME=TMQ_NR_8VP_yf03_kfolds"
+rem set "DATABASE=WPC"
+rem set "VIEWS=8"
+rem set "VIEW_METHOD=Y_fixed_0.3"
+rem set "RENDER_METHOD=New_Render"
+rem set "MOS_CSV=.\dataset\WPC\WPC_MOS.csv"
+rem set "TESTLIST_CSV=.\dataset\WPC\WPC_MOS.csv"
+rem set "USE_FOLDS=0"
+rem set "RUN_TRAINING=0"
+
+rem --- PRESET J: WPC2, 5-fold
+rem set "RUN_NAME=WPC2_5FOLD"
+rem set "MODEL_NAME=WPC2_NR_8VP_yf03_kfolds"
+rem set "DATABASE=WPC2"
+rem set "VIEWS=8"
+rem set "VIEW_METHOD=Y_fixed_0.3"
+rem set "RENDER_METHOD=New_Render"
+rem set "MOS_CSV=.\dataset\WPC2\WPC2.0_MOS.csv"
+rem set "TESTLIST_CSV=.\dataset\WPC2\folds\WPC2.0_MOS_test20.csv"
+rem set "USE_FOLDS=1"
+rem set "RUN_TRAINING=1"
+rem set "TRAIN_DATASETS=%REPO_ROOT%\dataset\WPC2\folds\WPC2.0_MOS_train80.csv"
+rem set "TRAIN_TESTCSV=%REPO_ROOT%\dataset\WPC2\folds\WPC2.0_MOS_test20.csv"
+rem set "TRAIN_TARGET=mos"
+
+rem --- PRESET K: WPC2, zero-shot (TMQ model)
+rem set "RUN_NAME=WPC2_ZEROSHOT"
+rem set "MODEL_NAME=TMQ_NR_8VP_yf03_kfolds"
+rem set "DATABASE=WPC2"
+rem set "VIEWS=8"
+rem set "VIEW_METHOD=Y_fixed_0.3"
+rem set "RENDER_METHOD=New_Render"
+rem set "MOS_CSV=.\dataset\WPC2\WPC2.0_MOS.csv"
+rem set "TESTLIST_CSV=.\dataset\WPC2\WPC2.0_MOS.csv"
+rem set "USE_FOLDS=0"
+rem set "RUN_TRAINING=0"
+
 if defined PRESET call :ApplyPreset "%PRESET%"
 if errorlevel 1 exit /b 1
 
@@ -393,6 +447,10 @@ echo   SJTU_TMQA_5FOLD
 echo   SJTU_TMQA_ZEROSHOT
 echo   BASICS_5FOLD_4VP
 echo   BASICS_ZEROSHOT
+echo   WPC_5FOLD
+echo   WPC_ZEROSHOT
+echo   WPC2_5FOLD
+echo   WPC2_ZEROSHOT
 echo.
 echo Notes:
 echo   - If no --preset is provided, the active preset block in the script is used.
@@ -507,6 +565,68 @@ if /I "%PRESET_NAME%"=="BASICS_ZEROSHOT" (
   set "RENDER_METHOD=SP"
   set "MOS_CSV=.\dataset\BASICS\MOS_CI.csv"
   set "TESTLIST_CSV=.\dataset\BASICS\MOS_CI_01.csv"
+  set "USE_FOLDS=0"
+  set "RUN_TRAINING=0"
+  exit /b 0
+)
+
+if /I "%PRESET_NAME%"=="WPC_5FOLD" (
+  set "RUN_NAME=WPC_5FOLD"
+  set "MODEL_NAME=WPC_NR_8VP_yf03_kfolds"
+  set "DATABASE=WPC"
+  set "VIEWS=8"
+  set "VIEW_METHOD=Y_fixed_0.3"
+  set "RENDER_METHOD=New_Render"
+  set "MOS_CSV=.\dataset\WPC\WPC_MOS.csv"
+  set "TESTLIST_CSV=.\dataset\WPC\folds\WPC_MOS_test20.csv"
+  set "USE_FOLDS=1"
+  set "RUN_TRAINING=1"
+  set "TRAIN_DATASETS=%REPO_ROOT%\dataset\WPC\folds\WPC_MOS_train80.csv"
+  set "TRAIN_TESTCSV=%REPO_ROOT%\dataset\WPC\folds\WPC_MOS_test20.csv"
+  set "TRAIN_TARGET=mos"
+  exit /b 0
+)
+
+if /I "%PRESET_NAME%"=="WPC_ZEROSHOT" (
+  set "RUN_NAME=WPC_ZEROSHOT"
+  set "MODEL_NAME=TMQ_NR_8VP_yf03_kfolds"
+  set "DATABASE=WPC"
+  set "VIEWS=8"
+  set "VIEW_METHOD=Y_fixed_0.3"
+  set "RENDER_METHOD=New_Render"
+  set "MOS_CSV=.\dataset\WPC\WPC_MOS.csv"
+  set "TESTLIST_CSV=.\dataset\WPC\WPC_MOS.csv"
+  set "USE_FOLDS=0"
+  set "RUN_TRAINING=0"
+  exit /b 0
+)
+
+if /I "%PRESET_NAME%"=="WPC2_5FOLD" (
+  set "RUN_NAME=WPC2_5FOLD"
+  set "MODEL_NAME=WPC2_NR_8VP_yf03_kfolds"
+  set "DATABASE=WPC2"
+  set "VIEWS=8"
+  set "VIEW_METHOD=Y_fixed_0.3"
+  set "RENDER_METHOD=New_Render"
+  set "MOS_CSV=.\dataset\WPC2\WPC2.0_MOS.csv"
+  set "TESTLIST_CSV=.\dataset\WPC2\folds\WPC2.0_MOS_test20.csv"
+  set "USE_FOLDS=1"
+  set "RUN_TRAINING=1"
+  set "TRAIN_DATASETS=%REPO_ROOT%\dataset\WPC2\folds\WPC2.0_MOS_train80.csv"
+  set "TRAIN_TESTCSV=%REPO_ROOT%\dataset\WPC2\folds\WPC2.0_MOS_test20.csv"
+  set "TRAIN_TARGET=mos"
+  exit /b 0
+)
+
+if /I "%PRESET_NAME%"=="WPC2_ZEROSHOT" (
+  set "RUN_NAME=WPC2_ZEROSHOT"
+  set "MODEL_NAME=TMQ_NR_8VP_yf03_kfolds"
+  set "DATABASE=WPC2"
+  set "VIEWS=8"
+  set "VIEW_METHOD=Y_fixed_0.3"
+  set "RENDER_METHOD=New_Render"
+  set "MOS_CSV=.\dataset\WPC2\WPC2.0_MOS.csv"
+  set "TESTLIST_CSV=.\dataset\WPC2\WPC2.0_MOS.csv"
   set "USE_FOLDS=0"
   set "RUN_TRAINING=0"
   exit /b 0
