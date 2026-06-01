@@ -17,8 +17,14 @@ rem   2) Light_GraphicsLPIPS_csv.py  -> compute per-object metric CSVs
 rem   3) correlation_VP.py           -> compute PLCC/SROCC summary
 rem -----------------------------------------------------------------------------
 
+set "SCRIPT_DIR=%~dp0"
+if exist "%SCRIPT_DIR%..\README.md" (
+  for %%I in ("%SCRIPT_DIR%..") do set "REPO_ROOT=%%~fI"
+) else (
+  for %%I in ("%SCRIPT_DIR%.") do set "REPO_ROOT=%%~fI"
+)
 set "PYTHON=python"
-set "REPO_ROOT=%~dp0.."
+if exist "%REPO_ROOT%\.venv\Scripts\python.exe" set "PYTHON=%REPO_ROOT%\.venv\Scripts\python.exe"
 
 rem Set to 1 to print commands only.
 set "DRY_RUN=0"
@@ -218,6 +224,31 @@ rem set "TESTLIST_CSV=.\dataset\WPC2\WPC2.0_MOS.csv"
 rem set "USE_FOLDS=0"
 rem set "RUN_TRAINING=0"
 
+rem --- PRESET L: WPC, SP/Circle, 5-fold trained checkpoint
+rem set "RUN_NAME=WPC_SP_CIRCLE_5FOLD"
+rem set "MODEL_NAME=WPC_SP_yf03_8VP_kfolds"
+rem set "DATABASE=WPC"
+rem set "VIEWS=8"
+rem set "VIEW_METHOD=Circle"
+rem set "RENDER_METHOD=SP"
+rem set "MOS_CSV=.\dataset\WPC\WPC_MOS.csv"
+rem set "TESTLIST_CSV=.\dataset\WPC\folds\WPC_MOS_test20.csv"
+rem set "USE_FOLDS=1"
+rem set "RUN_TRAINING=0"
+
+rem --- PRESET M: WPC, SP/Circle, zero-shot with TMQ trained checkpoint folds
+rem set "RUN_NAME=WPC_SP_CIRCLE_TMQ_ZEROSHOT"
+rem set "MODEL_NAME=TMQ_NR_8VP_yf03_kfolds"
+rem set "DATABASE=WPC"
+rem set "VIEWS=8"
+rem set "VIEW_METHOD=Circle"
+rem set "RENDER_METHOD=SP"
+rem set "MOS_CSV=.\dataset\WPC\WPC_MOS.csv"
+rem set "TESTLIST_CSV=.\dataset\WPC\WPC_MOS.csv"
+rem set "USE_FOLDS=1"
+rem set "TESTLIST_HAS_FOLDS=0"
+rem set "RUN_TRAINING=0"
+
 if defined PRESET call :ApplyPreset "%PRESET%"
 if errorlevel 1 exit /b 1
 
@@ -248,6 +279,7 @@ rem Set USE_GPU=0 if CUDA is unavailable.
 set "USE_GPU=1"
 
 if not defined RUN_TRAINING set "RUN_TRAINING=1"
+if not defined TESTLIST_HAS_FOLDS set "TESTLIST_HAS_FOLDS=%USE_FOLDS%"
 
 rem Keep only latest_net_.pth after training. Set to 0 if you want epoch snapshots.
 set "KEEP_ONLY_LATEST=1"
@@ -322,10 +354,15 @@ if "%RUN_TRAINING%"=="1" (
 )
 
 if "%USE_FOLDS%"=="1" (
-  set "TESTLIST_BASE=%REPO_ROOT%\!TESTLIST_CSV!"
-  set "TESTLIST_K0=!TESTLIST_BASE:.csv=_k0.csv!"
-  if not exist "!TESTLIST_K0!" (
-    echo [ERROR] Missing fold test list CSV: !TESTLIST_K0!
+  if "%TESTLIST_HAS_FOLDS%"=="1" (
+    set "TESTLIST_BASE=%REPO_ROOT%\!TESTLIST_CSV!"
+    set "TESTLIST_K0=!TESTLIST_BASE:.csv=_k0.csv!"
+    if not exist "!TESTLIST_K0!" (
+      echo [ERROR] Missing fold test list CSV: !TESTLIST_K0!
+      exit /b 1
+    )
+  ) else if not exist "%REPO_ROOT%\%TESTLIST_CSV%" (
+    echo [ERROR] Missing test list CSV: %REPO_ROOT%\%TESTLIST_CSV%
     exit /b 1
   )
 ) else (
@@ -451,6 +488,8 @@ echo   WPC_5FOLD
 echo   WPC_ZEROSHOT
 echo   WPC2_5FOLD
 echo   WPC2_ZEROSHOT
+echo   WPC_SP_CIRCLE_5FOLD
+echo   WPC_SP_CIRCLE_TMQ_ZEROSHOT
 echo.
 echo Notes:
 echo   - If no --preset is provided, the active preset block in the script is used.
@@ -628,6 +667,35 @@ if /I "%PRESET_NAME%"=="WPC2_ZEROSHOT" (
   set "MOS_CSV=.\dataset\WPC2\WPC2.0_MOS.csv"
   set "TESTLIST_CSV=.\dataset\WPC2\WPC2.0_MOS.csv"
   set "USE_FOLDS=0"
+  set "RUN_TRAINING=0"
+  exit /b 0
+)
+
+if /I "%PRESET_NAME%"=="WPC_SP_CIRCLE_5FOLD" (
+  set "RUN_NAME=WPC_SP_CIRCLE_5FOLD"
+  set "MODEL_NAME=WPC_SP_yf03_8VP_kfolds"
+  set "DATABASE=WPC"
+  set "VIEWS=8"
+  set "VIEW_METHOD=Circle"
+  set "RENDER_METHOD=SP"
+  set "MOS_CSV=.\dataset\WPC\WPC_MOS.csv"
+  set "TESTLIST_CSV=.\dataset\WPC\folds\WPC_MOS_test20.csv"
+  set "USE_FOLDS=1"
+  set "RUN_TRAINING=0"
+  exit /b 0
+)
+
+if /I "%PRESET_NAME%"=="WPC_SP_CIRCLE_TMQ_ZEROSHOT" (
+  set "RUN_NAME=WPC_SP_CIRCLE_TMQ_ZEROSHOT"
+  set "MODEL_NAME=TMQ_NR_8VP_yf03_kfolds"
+  set "DATABASE=WPC"
+  set "VIEWS=8"
+  set "VIEW_METHOD=Circle"
+  set "RENDER_METHOD=SP"
+  set "MOS_CSV=.\dataset\WPC\WPC_MOS.csv"
+  set "TESTLIST_CSV=.\dataset\WPC\WPC_MOS.csv"
+  set "USE_FOLDS=1"
+  set "TESTLIST_HAS_FOLDS=0"
   set "RUN_TRAINING=0"
   exit /b 0
 )

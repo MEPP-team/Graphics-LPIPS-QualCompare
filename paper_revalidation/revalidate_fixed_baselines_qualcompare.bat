@@ -10,12 +10,40 @@ rem These baselines are not trained, so they are evaluated once on the full
 rem rendered database. No folds are used.
 
 set "DRY_RUN=0"
-if /I "%~1"=="--dry-run" set "DRY_RUN=1"
+set "PRESET="
 
-set "REPO_ROOT=%~dp0.."
+:parse_args
+if "%~1"=="" goto args_done
+if /I "%~1"=="--dry-run" (
+  set "DRY_RUN=1"
+  shift
+  goto parse_args
+)
+if /I "%~1"=="--preset" (
+  if "%~2"=="" (
+    echo [ERROR] Missing preset name after --preset.
+    exit /b 1
+  )
+  set "PRESET=%~2"
+  shift
+  shift
+  goto parse_args
+)
+echo [ERROR] Unknown argument: %~1
+exit /b 1
+
+:args_done
+
+set "SCRIPT_DIR=%~dp0"
+if exist "%SCRIPT_DIR%..\README.md" (
+  for %%I in ("%SCRIPT_DIR%..") do set "REPO_ROOT=%%~fI"
+) else (
+  for %%I in ("%SCRIPT_DIR%.") do set "REPO_ROOT=%%~fI"
+)
 pushd "%REPO_ROOT%" >nul
 
 set "PYTHON=python"
+if exist "%REPO_ROOT%\.venv\Scripts\python.exe" set "PYTHON=%REPO_ROOT%\.venv\Scripts\python.exe"
 set "OUT_ROOT=.\out"
 set "GPU_FLAG=--use_gpu"
 
@@ -27,7 +55,18 @@ if defined QUALCOMPARE_OUT_ROOT (
 
 echo [INFO] Render root: %RENDERS_ROOT%
 echo [INFO] Dry run    : %DRY_RUN%
+if defined PRESET echo [INFO] Preset     : %PRESET%
 echo.
+
+if /I "%PRESET%"=="WPC_SP_CIRCLE" (
+  call :RunDataset WPC 8 SP Circle "%REPO_ROOT%\dataset\WPC\WPC_MOS.csv" "%REPO_ROOT%\dataset\WPC\WPC_MOS.csv"
+  if errorlevel 1 goto :fail
+  goto :done
+)
+if defined PRESET (
+  echo [ERROR] Unknown preset: %PRESET%
+  goto :fail
+)
 
 call :RunDataset TMQ 8 New_Render Y_fixed_0.3 ".\dataset\TMQ\TMQ_MOS.csv"
 if errorlevel 1 goto :fail
@@ -46,9 +85,13 @@ if errorlevel 1 goto :fail
 call :RunDataset WPC 8 New_Render Y_fixed_0.3 ".\dataset\WPC\WPC_MOS.csv"
 if errorlevel 1 goto :fail
 
+call :RunDataset WPC 8 SP Circle ".\dataset\WPC\WPC_MOS.csv" ".\dataset\WPC\WPC_MOS.csv"
+if errorlevel 1 goto :fail
+
 call :RunDataset WPC2 8 New_Render Y_fixed_0.3 ".\dataset\WPC2\WPC2.0_MOS.csv"
 if errorlevel 1 goto :fail
 
+:done
 echo.
 echo [OK] Fixed baseline revalidation finished.
 popd >nul
@@ -60,7 +103,10 @@ set "VIEWS=%~2"
 set "RENDER_METHOD=%~3"
 set "VIEW_METHOD=%~4"
 set "MOS_CSV=%~5"
+set "TESTLIST_CSV=%~6"
 set "SRC_ROOT=%RENDERS_ROOT%\%DATABASE%\%RENDER_METHOD%\%VIEW_METHOD%"
+set "TESTLIST_FLAG="
+if not "%TESTLIST_CSV%"=="" set "TESTLIST_FLAG=-testlist %TESTLIST_CSV%"
 
 echo ============================================================
 echo [DATASET] %DATABASE% / %RENDER_METHOD% / %VIEW_METHOD% / %VIEWS%VP
@@ -79,17 +125,17 @@ if not exist "%MOS_CSV%" (
   exit /b 1
 )
 
-call :RunMetric revalidate_lpips.py LPIPS_TORCHMETRICS "%DATABASE%" %VIEWS% "%RENDER_METHOD%" "%VIEW_METHOD%" "%MOS_CSV%" "%SRC_ROOT%" %GPU_FLAG%
+call :RunMetric paper_revalidation\revalidate_lpips.py LPIPS_TORCHMETRICS "%DATABASE%" %VIEWS% "%RENDER_METHOD%" "%VIEW_METHOD%" "%MOS_CSV%" "%SRC_ROOT%" %GPU_FLAG%
 if errorlevel 1 exit /b 1
 call :RunCorrelation LPIPS_TORCHMETRICS "%DATABASE%" %VIEWS% "%RENDER_METHOD%" "%VIEW_METHOD%"
 if errorlevel 1 exit /b 1
 
-call :RunMetric revalidate_ssim.py SSIM "%DATABASE%" %VIEWS% "%RENDER_METHOD%" "%VIEW_METHOD%" "%MOS_CSV%" "%SRC_ROOT%"
+call :RunMetric paper_revalidation\revalidate_ssim.py SSIM "%DATABASE%" %VIEWS% "%RENDER_METHOD%" "%VIEW_METHOD%" "%MOS_CSV%" "%SRC_ROOT%"
 if errorlevel 1 exit /b 1
 call :RunCorrelation SSIM "%DATABASE%" %VIEWS% "%RENDER_METHOD%" "%VIEW_METHOD%"
 if errorlevel 1 exit /b 1
 
-call :RunMetric revalidate_ssim_images.py SSIM_IMAGES "%DATABASE%" %VIEWS% "%RENDER_METHOD%" "%VIEW_METHOD%" "%MOS_CSV%" "%SRC_ROOT%"
+call :RunMetric paper_revalidation\revalidate_ssim_images.py SSIM_IMAGES "%DATABASE%" %VIEWS% "%RENDER_METHOD%" "%VIEW_METHOD%" "%MOS_CSV%" "%SRC_ROOT%"
 if errorlevel 1 exit /b 1
 call :RunCorrelation SSIM_IMAGES "%DATABASE%" %VIEWS% "%RENDER_METHOD%" "%VIEW_METHOD%"
 if errorlevel 1 exit /b 1
@@ -107,7 +153,7 @@ set "MOS_CSV=%~7"
 set "SRC_ROOT=%~8"
 set "EXTRA_FLAG=%~9"
 
-set "CMD=%PYTHON% %SCRIPT% -m %MODEL% -v %VIEWS% -vm %VIEW_METHOD% -rm %RENDER_METHOD% -db %DATABASE% -mos %MOS_CSV% --src_root "%SRC_ROOT%" %EXTRA_FLAG%"
+set "CMD=%PYTHON% %SCRIPT% -m %MODEL% -v %VIEWS% -vm %VIEW_METHOD% -rm %RENDER_METHOD% -db %DATABASE% -mos %MOS_CSV% %TESTLIST_FLAG% --src_root "%SRC_ROOT%" %EXTRA_FLAG%"
 echo.
 echo [METRIC] %MODEL%
 echo %CMD%
@@ -119,7 +165,7 @@ if "%METRIC_COMPLETE%"=="1" (
   exit /b 0
 )
 if "%DRY_RUN%"=="0" (
-  %PYTHON% %SCRIPT% -m %MODEL% -v %VIEWS% -vm %VIEW_METHOD% -rm %RENDER_METHOD% -db %DATABASE% -mos %MOS_CSV% --src_root "%SRC_ROOT%" %EXTRA_FLAG%
+  %PYTHON% %SCRIPT% -m %MODEL% -v %VIEWS% -vm %VIEW_METHOD% -rm %RENDER_METHOD% -db %DATABASE% -mos %MOS_CSV% %TESTLIST_FLAG% --src_root "%SRC_ROOT%" %EXTRA_FLAG%
   if errorlevel 1 exit /b 1
 )
 exit /b 0
@@ -129,7 +175,6 @@ set "RESULT_FILENAME=GLPIPS_results_testset.csv"
 if /I "%~1"=="LPIPS_TORCHMETRICS" set "RESULT_FILENAME=LPIPS_results_testset.csv"
 if /I "%~1"=="SSIM" set "RESULT_FILENAME=SSIM_results_testset.csv"
 if /I "%~1"=="SSIM_IMAGES" set "RESULT_FILENAME=SSIM_IMAGES_results_testset.csv"
-if /I "%~1"=="WEIGHTED_GLPIPS" set "RESULT_FILENAME=WEIGHTED_GLPIPS_results_testset.csv"
 exit /b 0
 
 :MetricIsComplete

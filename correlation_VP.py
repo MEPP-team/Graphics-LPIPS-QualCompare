@@ -44,8 +44,6 @@ def normalize_name(name: str) -> str:
 
 def default_results_filename(model: str) -> str:
     model_norm = normalize_name(model)
-    if model_norm.startswith("weightedglpips") or model_norm.startswith("patchweightedglpips"):
-        return "WEIGHTED_GLPIPS_results_testset.csv"
     if model_norm.startswith("ssimimages") or model_norm.startswith("ssimviews"):
         return "SSIM_IMAGES_results_testset.csv"
     if model_norm.startswith("ssim"):

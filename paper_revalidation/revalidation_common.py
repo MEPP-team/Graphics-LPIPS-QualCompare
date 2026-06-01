@@ -1,6 +1,12 @@
 import csv
 import os
 import re
+import sys
+from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 
 import cv2
 
@@ -83,6 +89,38 @@ def get_testset_ref_list(test_list_csv):
             if name_candidate not in ref_list:
                 ref_list.append(name_candidate)
     return ref_list
+
+
+def get_testset_dis_list_from_ref(test_list_csv, ref_obj_name):
+    dis_list = []
+    with open(test_list_csv, mode="r", newline="") as f:
+        reader = csv.reader(f)
+        next(reader, None)
+        for row in reader:
+            if len(row) < 2:
+                continue
+            ref_candidate = row[0]
+            dis_candidate = row[1]
+            if normalize_name(ref_candidate) == normalize_name(ref_obj_name):
+                dis_list.append(dis_candidate)
+    return dis_list
+
+
+def get_distorted_list_for_ref(root_dis_patches: str, ref_obj_name: str, test_list_csv: str | None = None):
+    import find_dis_ref
+
+    distorted_obj_list = find_dis_ref.find_dis_files(root_dis_patches, ref_obj_name)
+    if not test_list_csv or not os.path.isfile(test_list_csv):
+        return distorted_obj_list
+
+    expected = {
+        normalize_name(name)
+        for name in get_testset_dis_list_from_ref(test_list_csv, ref_obj_name)
+    }
+    return [
+        name for name in distorted_obj_list
+        if normalize_name(name) in expected
+    ]
 
 
 def load_rgb_image(path):

@@ -6,12 +6,22 @@ matching distorted view, then writes one SSIM score per viewpoint.
 
 import argparse
 import os
+import sys
+from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 
 import numpy as np
 
 import correlation_VP
-import find_dis_ref
-from revalidation_common import get_ref_list_for_full_database, has_completed_results_file, load_rgb_image
+from revalidation_common import (
+    get_distorted_list_for_ref,
+    get_ref_list_for_full_database,
+    has_completed_results_file,
+    load_rgb_image,
+)
 from ssim import ssim as compute_ssim
 
 
@@ -62,7 +72,7 @@ def main():
 
     for ref_obj in ref_obj_list:
         ref_views_folder = os.path.join(root_ref_views, ref_obj, "views")
-        distorted_obj_list = find_dis_ref.find_dis_files(root_dis_views, ref_obj)
+        distorted_obj_list = get_distorted_list_for_ref(root_dis_views, ref_obj, args.test_list_csv)
 
         results_dir = out + "_METRIC_RESULTS_TESTSET_/" + ref_obj + "/"
         os.makedirs(results_dir, exist_ok=True)

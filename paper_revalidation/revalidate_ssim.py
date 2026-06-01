@@ -6,12 +6,19 @@ rather than fold by fold.
 
 import argparse
 import os
+import sys
+from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 
 import numpy as np
 
 import correlation_VP
 import find_dis_ref
 from revalidation_common import (
+    get_distorted_list_for_ref,
     get_ref_list_for_full_database,
     has_completed_results_file,
     iter_view_patch_groups,
@@ -63,7 +70,7 @@ def main():
     for ref_obj in ref_obj_list:
         ref_obj_root = os.path.join(root_refPatches, ref_obj)
         ref_views_folder = os.path.join(ref_obj_root, "views")
-        distorted_obj_list = find_dis_ref.find_dis_files(root_disPatches, ref_obj)
+        distorted_obj_list = get_distorted_list_for_ref(root_disPatches, ref_obj, args.test_list_csv)
 
         results_dir = output_dir + "_METRIC_RESULTS_TESTSET_/" + ref_obj + "/"
         os.makedirs(os.path.dirname(results_dir), exist_ok=True)

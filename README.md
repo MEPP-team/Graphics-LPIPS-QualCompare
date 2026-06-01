@@ -19,10 +19,10 @@ This workflow is also associated with the QualCompare revalidation paper:
 
 ## Quick Links
 
-- **Paper reproduction guide**: [PAPER_REPRODUCTION_QUICKSTART.md](PAPER_REPRODUCTION_QUICKSTART.md) - Full revalidation workflow and results interpretation
+- **Paper revalidation guide**: [paper_revalidation/README.md](paper_revalidation/README.md) - Full revalidation workflow and results interpretation
 - Quick metric usage: [QUICKSTART_METRIC.md](QUICKSTART_METRIC.md) - Fast setup for custom datasets
 - Command templates: [scripts/README.md](scripts/README.md)
-- Revalidation helper: [scripts/revalidate_table_qualcompare.bat](scripts/revalidate_table_qualcompare.bat)
+- Revalidation helper: [paper_revalidation/revalidate_table_qualcompare.bat](paper_revalidation/revalidate_table_qualcompare.bat)
 
 ## Repository Focus
 
@@ -159,8 +159,8 @@ If a public demo checkpoint is provided, it becomes possible to test the full ev
 If your goal is mainly to rerun a published or previous experience, start here:
 
 1. Make sure the rendered image dataset is available locally, or regenerate it with `QualCompare` from the object datasets you want to validate.
-2. Check [scripts/README.md](scripts/README.md) for the revalidation command templates.
-3. Run [scripts/revalidate_table_qualcompare.bat](scripts/revalidate_table_qualcompare.bat) with `--dry-run` first, then remove `--dry-run` once the configuration matches your setup.
+2. Check [paper_revalidation/README.md](paper_revalidation/README.md) for the paper revalidation pipeline.
+3. Run [paper_revalidation/revalidate_table_qualcompare.bat](paper_revalidation/revalidate_table_qualcompare.bat) with `--dry-run` first, then remove `--dry-run` once the configuration matches your setup.
 
 ### 1. Prepare the rendered dataset
 
@@ -284,11 +284,11 @@ The `scripts/` directory contains command templates that can be copied and adapt
 - `scripts/train_metric.txt`
 - `scripts/evaluate_metric.txt`
 - `scripts/correlate_metric.txt`
-- `scripts/revalidate_table_qualcompare.bat` (train + evaluate + correlate for paper-table revalidation)
 
 See also:
 
-- `scripts/README.md` for notes on placeholders, shell syntax, expected rendered structure, and full `revalidate_table_qualcompare.bat` specifications
+- `scripts/README.md` for command-template notes
+- `paper_revalidation/README.md` for the complete paper revalidation pipeline
 
 ## Quick Patch-Level Example
 
@@ -309,7 +309,8 @@ python GraphicsLpips_2imgs.py \
 - `data/`: data loading pipeline
 - `lpips/`: local LPIPS implementation and trainer
 - `util/`: visualization and utility helpers
-- `scripts/train_metric.txt`: example training command
+- `scripts/`: reusable command templates for training, evaluation, and correlation
+- `paper_revalidation/`: paper-oriented revalidation pipelines and fixed baseline scripts
 
 ## Notes
 
@@ -326,11 +327,12 @@ This repository includes the pre-trained checkpoint `TMQ_NR_8VP_yf03_kfolds`, wh
 The easiest way to reproduce paper results is using the helper script:
 
 ```bash
-# First, set RENDERS_ROOT in the script to point to your QualCompare renders
-scripts\revalidate_table_qualcompare.bat --dry-run
+# First, set the root containing your QualCompare renders
+set QUALCOMPARE_OUT_ROOT=D:\path\to\QualCompare\out
+paper_revalidation\revalidate_table_qualcompare.bat --dry-run
 
-# Then edit the script and run without --dry-run
-scripts\revalidate_table_qualcompare.bat
+# Review the commands, then run without --dry-run
+paper_revalidation\revalidate_table_qualcompare.bat
 ```
 
 ### Zero-Shot Evaluation Workflow
@@ -419,6 +421,13 @@ python correlation_VP.py ^
 
 - **MOS CSV** (`-mos`): Required format with columns `[object_name, mos_score]`
 - **Test List** (`-testlist`): Required format with columns `[object_name]` or similar, listing objects to evaluate
+- **Training CSV** (`train.py --datasets` / `--testcsv`): Required format with columns `Model,stimulus,MOS`, where `Model` is the reference object and `stimulus` is the distorted object folder name.
+
+Some dataset CSVs store MOS values that have been normalized for GraphicsLPIPS training. In that training setup, the target follows a distortion-distance convention: `0` means close to the reference and `1` means strongly distorted. When a source dataset provides quality MOS values where higher means better quality, those scores should be rescaled and inverted before training, for example:
+
+```text
+MOS_training = 1 - (MOS_original / 100)
+```
 
 ### Checkpoint Details
 
