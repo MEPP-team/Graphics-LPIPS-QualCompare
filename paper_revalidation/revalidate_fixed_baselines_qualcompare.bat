@@ -6,16 +6,22 @@ rem   - LPIPS_TORCHMETRICS: patch-based LPIPS
 rem   - SSIM: patch-based SSIM
 rem   - SSIM_IMAGES: full-view SSIM
 rem
-rem These baselines are not trained, so they are evaluated once on the full
-rem rendered database. No folds are used.
+rem These baselines are not trained. With --use-folds, their full-database
+rem scores are filtered into each dataset test fold before correlations.
 
 set "DRY_RUN=0"
 set "PRESET="
+set "USE_FOLDS=0"
 
 :parse_args
 if "%~1"=="" goto args_done
 if /I "%~1"=="--dry-run" (
   set "DRY_RUN=1"
+  shift
+  goto parse_args
+)
+if /I "%~1"=="--use-folds" (
+  set "USE_FOLDS=1"
   shift
   goto parse_args
 )
@@ -55,11 +61,38 @@ if defined QUALCOMPARE_OUT_ROOT (
 
 echo [INFO] Render root: %RENDERS_ROOT%
 echo [INFO] Dry run    : %DRY_RUN%
+echo [INFO] Use folds  : %USE_FOLDS%
 if defined PRESET echo [INFO] Preset     : %PRESET%
 echo.
 
 if /I "%PRESET%"=="WPC_SP_CIRCLE" (
-  call :RunDataset WPC 8 SP Circle "%REPO_ROOT%\dataset\WPC\WPC_MOS.csv" "%REPO_ROOT%\dataset\WPC\WPC_MOS.csv"
+  call :RunDataset WPC 8 SP_960x960 Y_fixed_0.3 "%REPO_ROOT%\dataset\WPC\WPC_MOS.csv" "%REPO_ROOT%\dataset\WPC\WPC_MOS.csv"
+  if errorlevel 1 goto :fail
+  goto :done
+)
+if /I "%PRESET%"=="TMQ_8VP" (
+  call :RunDataset TMQ 8 New_Render Y_fixed_0.3 "%REPO_ROOT%\dataset\TMQ\TMQ_MOS.csv" "" "%REPO_ROOT%\dataset\TMQ\folds\TexturedDB_20_TestList_withnbPatchesPerVP_threth0.6_k0.csv"
+  if errorlevel 1 goto :fail
+  goto :done
+)
+if /I "%PRESET%"=="TSMD_8VP" (
+  for %%F in ("%REPO_ROOT%\dataset\TSMD\folds\TSMD_20?_TestList_scaled_k0.csv") do set "TSMD_FOLD_TESTLIST=%%~fF"
+  call :RunDataset TSMD 8 New_Render Y_fixed_0.3 "%REPO_ROOT%\dataset\TSMD\_TSMD_fulldataset.csv" "" "!TSMD_FOLD_TESTLIST!"
+  if errorlevel 1 goto :fail
+  goto :done
+)
+if /I "%PRESET%"=="SJTU_TMQA_8VP" (
+  call :RunDataset SJTU-TMQA 8 0_0_light Y_fixed_0 "%REPO_ROOT%\dataset\SJTU-TMQA\SJTU-TMQA_MOS_1-5.csv" "" "%REPO_ROOT%\dataset\SJTU-TMQA\folds\SJTU-TMQA_MOS_test20_k0.csv"
+  if errorlevel 1 goto :fail
+  goto :done
+)
+if /I "%PRESET%"=="BASICS_SP960_YF03_8VP" (
+  call :RunDataset BASICS 8 SP_960x960 Y_fixed_0.3 "%REPO_ROOT%\dataset\BASICS\MOS_CI.csv" "" "%REPO_ROOT%\dataset\BASICS\folds\MOS_CI_test20.csv"
+  if errorlevel 1 goto :fail
+  goto :done
+)
+if /I "%PRESET%"=="WPC_SP960_YF03_8VP" (
+  call :RunDataset WPC 8 SP_960x960 Y_fixed_0.3 "%REPO_ROOT%\dataset\WPC\WPC_MOS.csv" "%REPO_ROOT%\dataset\WPC\WPC_MOS.csv" "%REPO_ROOT%\dataset\WPC\folds\WPC_MOS_test20.csv"
   if errorlevel 1 goto :fail
   goto :done
 )
@@ -79,13 +112,13 @@ if errorlevel 1 goto :fail
 call :RunDataset SJTU-TMQA 8 0_0_light Y_fixed_0 ".\dataset\SJTU-TMQA\SJTU-TMQA_MOS_1-5.csv"
 if errorlevel 1 goto :fail
 
-call :RunDataset BASICS 4 SP Y_fixed_0 ".\dataset\BASICS\MOS_CI.csv"
+call :RunDataset BASICS 8 SP_960x960 Y_fixed_0.3 ".\dataset\BASICS\MOS_CI.csv"
 if errorlevel 1 goto :fail
 
 call :RunDataset WPC 8 New_Render Y_fixed_0.3 ".\dataset\WPC\WPC_MOS.csv"
 if errorlevel 1 goto :fail
 
-call :RunDataset WPC 8 SP Circle ".\dataset\WPC\WPC_MOS.csv" ".\dataset\WPC\WPC_MOS.csv"
+call :RunDataset WPC 8 SP_960x960 Y_fixed_0.3 ".\dataset\WPC\WPC_MOS.csv" ".\dataset\WPC\WPC_MOS.csv"
 if errorlevel 1 goto :fail
 
 call :RunDataset WPC2 8 New_Render Y_fixed_0.3 ".\dataset\WPC2\WPC2.0_MOS.csv"
@@ -104,6 +137,7 @@ set "RENDER_METHOD=%~3"
 set "VIEW_METHOD=%~4"
 set "MOS_CSV=%~5"
 set "TESTLIST_CSV=%~6"
+set "FOLD_TESTLIST_CSV=%~7"
 set "SRC_ROOT=%RENDERS_ROOT%\%DATABASE%\%RENDER_METHOD%\%VIEW_METHOD%"
 set "TESTLIST_FLAG="
 if not "%TESTLIST_CSV%"=="" set "TESTLIST_FLAG=-testlist %TESTLIST_CSV%"
@@ -189,12 +223,29 @@ set "VIEWS=%~3"
 set "RENDER_METHOD=%~4"
 set "VIEW_METHOD=%~5"
 
-set "CMD=%PYTHON% correlation_VP.py -m %MODEL% -v %VIEWS% -vm %VIEW_METHOD% -rm %RENDER_METHOD% -db %DATABASE% --out_root "%OUT_ROOT%""
+set "FOLD_FLAG="
+if "%USE_FOLDS%"=="1" (
+  if "%FOLD_TESTLIST_CSV%"=="" (
+    echo [ERROR] Missing fold test-list base CSV for %DATABASE%.
+    exit /b 1
+  )
+  call :MetricResultsFilename "%MODEL%"
+  echo.
+  echo [FOLDS] %MODEL%
+  echo %PYTHON% paper_revalidation\materialize_fixed_baseline_folds.py --database %DATABASE% --model %MODEL% --views %VIEWS% --render-method %RENDER_METHOD% --view-method %VIEW_METHOD% --testlist "%FOLD_TESTLIST_CSV%" --results-file !RESULT_FILENAME! --out-root "%OUT_ROOT%"
+  if "%DRY_RUN%"=="0" (
+    %PYTHON% paper_revalidation\materialize_fixed_baseline_folds.py --database %DATABASE% --model %MODEL% --views %VIEWS% --render-method %RENDER_METHOD% --view-method %VIEW_METHOD% --testlist "%FOLD_TESTLIST_CSV%" --results-file !RESULT_FILENAME! --out-root "%OUT_ROOT%"
+    if errorlevel 1 exit /b 1
+  )
+  set "FOLD_FLAG=--use_folds"
+)
+
+set "CMD=%PYTHON% correlation_VP.py -m %MODEL% %FOLD_FLAG% -v %VIEWS% -vm %VIEW_METHOD% -rm %RENDER_METHOD% -db %DATABASE% --out_root "%OUT_ROOT%""
 echo.
 echo [CORRELATION] %MODEL%
 echo %CMD%
 if "%DRY_RUN%"=="0" (
-  %PYTHON% correlation_VP.py -m %MODEL% -v %VIEWS% -vm %VIEW_METHOD% -rm %RENDER_METHOD% -db %DATABASE% --out_root "%OUT_ROOT%"
+  %PYTHON% correlation_VP.py -m %MODEL% %FOLD_FLAG% -v %VIEWS% -vm %VIEW_METHOD% -rm %RENDER_METHOD% -db %DATABASE% --out_root "%OUT_ROOT%"
   if errorlevel 1 exit /b 1
 )
 exit /b 0

@@ -1,4 +1,5 @@
 import csv
+import glob
 import os
 import re
 import sys
@@ -47,6 +48,12 @@ def resolve_fold_testlist_path(database: str, test_list_csv: str, fold: int) -> 
 
     if os.path.isfile(test_list_csv):
         return test_list_csv
+
+    if database.upper() == "TSMD":
+        fold_dir = os.path.join("./dataset", database, "folds")
+        matches = glob.glob(os.path.join(fold_dir, f"TSMD_20*_TestList_scaled_k{fold}.csv"))
+        if matches:
+            return matches[0]
 
     raise FileNotFoundError(
         f"Could not find test list CSV for fold {fold}. Tried '{fold_csv}' and '{test_list_csv}'."

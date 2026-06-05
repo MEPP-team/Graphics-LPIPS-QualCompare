@@ -67,18 +67,27 @@ $env:QUALCOMPARE_OUT_ROOT = "D:\path\to\QualCompare\out"
 Both batch scripts automatically use `.venv\Scripts\python.exe` when it exists
 at the repository root. Otherwise they fall back to `python`.
 
+For training runs, you can override the interpreter selected by
+`revalidate_table_qualcompare.bat`:
+
+```cmd
+set REVALIDATION_PYTHON=python
+```
+
+This is useful when `.venv` is CPU-only but another Python environment has CUDA.
+
 ## Graphics-LPIPS Revalidation
 
 Always start with a dry run:
 
 ```cmd
-paper_revalidation\revalidate_table_qualcompare.bat --dry-run --preset WPC_SP_CIRCLE_5FOLD
+paper_revalidation\revalidate_table_qualcompare.bat --dry-run --preset WPC_SP960_YF03_8VP_5FOLD
 ```
 
 Then run the pipeline:
 
 ```cmd
-paper_revalidation\revalidate_table_qualcompare.bat --preset WPC_SP_CIRCLE_5FOLD
+paper_revalidation\revalidate_table_qualcompare.bat --preset WPC_SP960_YF03_8VP_5FOLD
 ```
 
 This script can:
@@ -94,27 +103,29 @@ Available presets:
 - `TSMD_ZEROSHOT`
 - `SJTU_TMQA_5FOLD`
 - `SJTU_TMQA_ZEROSHOT`
-- `BASICS_5FOLD_4VP`
+- `BASICS_SP960_YF03_8VP_5FOLD`
 - `BASICS_ZEROSHOT`
 - `WPC_5FOLD`
 - `WPC_ZEROSHOT`
 - `WPC2_5FOLD`
 - `WPC2_ZEROSHOT`
-- `WPC_SP_CIRCLE_5FOLD`
-- `WPC_SP_CIRCLE_TMQ_ZEROSHOT`
+- `WPC_SP960_YF03_8VP_5FOLD`
+- `WPC_SP960_YF03_8VP_TMQ_ZEROSHOT`
+- `BASICS_SP960_YF03_8VP_5FOLD_TEST`
+- `WPC_SP960_YF03_8VP_5FOLD_TEST`
 
 ## Fixed Baseline Revalidation
 
 Dry run:
 
 ```cmd
-paper_revalidation\revalidate_fixed_baselines_qualcompare.bat --dry-run --preset WPC_SP_CIRCLE
+paper_revalidation\revalidate_fixed_baselines_qualcompare.bat --dry-run --preset WPC_SP960_YF03_8VP
 ```
 
 Run:
 
 ```cmd
-paper_revalidation\revalidate_fixed_baselines_qualcompare.bat --preset WPC_SP_CIRCLE
+paper_revalidation\revalidate_fixed_baselines_qualcompare.bat --preset WPC_SP960_YF03_8VP
 ```
 
 The fixed-baseline script evaluates:
@@ -124,6 +135,28 @@ The fixed-baseline script evaluates:
 - `SSIM_IMAGES`
 
 These baselines are not trained. They run once on the selected full test set.
+
+`SSIM` and `SSIM_IMAGES` use `skimage.metrics.structural_similarity` with the
+parameters recommended by scikit-image to match Wang et al.: Gaussian weights,
+sigma 1.5, population covariance, and an explicit data range of 255. The local
+wrapper in `ssim.py` also applies the automatic low-pass filtering and
+downsampling from Zhou Wang's `ssim.m`.
+
+To compare fixed baselines on exactly the same test partitions as trained
+models, add `--use-folds`. The full deterministic metric results are filtered
+into the five dataset test folds, then correlations are computed per fold:
+
+```cmd
+paper_revalidation\revalidate_fixed_baselines_qualcompare.bat --use-folds --preset WPC_SP960_YF03_8VP
+```
+
+Additional fixed-baseline presets for the current 8-view `SP_960x960` renders:
+
+- `TMQ_8VP`
+- `TSMD_8VP`
+- `SJTU_TMQA_8VP`
+- `BASICS_SP960_YF03_8VP`
+- `WPC_SP960_YF03_8VP`
 
 ## Outputs
 

@@ -2,6 +2,7 @@ import csv
 import hashlib
 import os
 import random
+import re
 import shutil
 import threading
 import time
@@ -42,6 +43,38 @@ def pick_view_path(base_folder: str, view_idx: int, ext: str = "auto") -> Option
         if os.path.exists(p):
             return p
     return None
+
+
+def normalize_object_name(name: str) -> str:
+    name = name.lower()
+    name = re.sub(r"\(.*?\)", "", name)
+    name = re.sub(r"_db$", "", name)
+    name = re.sub(r"_kfolds$", "", name)
+    name = name.replace("_rounded", "")
+    name = re.sub(r"[^a-z0-9]", "", name)
+    return name
+
+
+def build_object_dir_map(root: str) -> dict[str, str]:
+    if not os.path.isdir(root):
+        return {}
+    return {
+        normalize_object_name(entry): entry
+        for entry in os.listdir(root)
+        if os.path.isdir(os.path.join(root, entry))
+    }
+
+
+def resolve_object_dir(root: str, object_name: str, object_map: dict[str, str]) -> str:
+    exact = os.path.join(root, object_name)
+    if os.path.isdir(exact):
+        return exact
+
+    resolved = object_map.get(normalize_object_name(object_name))
+    if resolved:
+        return os.path.join(root, resolved)
+
+    return exact
 
 
 def ensure_on_ssd(src_path: str, src_root: Optional[str], cache_root: Optional[str], retries: int = 30, sleep: float = 0.05) -> str:
@@ -130,6 +163,8 @@ class TwoAFCDataset(Dataset):
         self.root_refPatches = os.path.join(self.src_root, root_refPatches)
         self.root_distPatches = os.path.join(self.src_root, root_distPatches)
         self.img_ext = img_ext
+        self.ref_object_map = build_object_dir_map(self.root_refPatches)
+        self.dist_object_map = build_object_dir_map(self.root_distPatches)
 
         project_root = Path(__file__).resolve().parents[2]
         dataset_root = project_root / "dataset"
@@ -165,9 +200,12 @@ class TwoAFCDataset(Dataset):
                     model = row[0]
                     stimulus = row[1]
                     mos = float(row[2])
-                    patch_csv_path = os.path.join(self.root_refPatches, model, "patchs", f"{model}_patchlist.csv")
-                    ref_view_folder = os.path.join(self.root_refPatches, model, "views")
-                    dis_view_folder = os.path.join(self.root_distPatches, stimulus, "views")
+                    ref_obj_folder = resolve_object_dir(self.root_refPatches, model, self.ref_object_map)
+                    dis_obj_folder = resolve_object_dir(self.root_distPatches, stimulus, self.dist_object_map)
+                    ref_obj_name = os.path.basename(ref_obj_folder)
+                    patch_csv_path = os.path.join(ref_obj_folder, "patchs", f"{ref_obj_name}_patchlist.csv")
+                    ref_view_folder = os.path.join(ref_obj_folder, "views")
+                    dis_view_folder = os.path.join(dis_obj_folder, "views")
                     judge_path = os.path.join(root_judges, f"{stimulus}.npy") if target == "judges" else None
 
                     with open(patch_csv_path, newline="") as pf:

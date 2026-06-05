@@ -22,6 +22,8 @@ def CreateDataLoader(
     if not nThreads or nThreads <= 0:
         dl_kwargs.pop("persistent_workers", None)
         dl_kwargs.pop("prefetch_factor", None)
+        persistent_workers = False
+        prefetch_factor = None
     data_loader = CustomDatasetDataLoader()
     worker_init_fn=lambda _: print("Worker started")
     #data_loader.initialize(InputData,dataroot=dataroot+'/'+dataset_mode,dataset_mode=dataset_mode,load_size=load_size,batch_size=batch_size,serial_batches=serial_batches, nThreads=nThreads)

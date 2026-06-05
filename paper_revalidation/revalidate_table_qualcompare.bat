@@ -25,6 +25,7 @@ if exist "%SCRIPT_DIR%..\README.md" (
 )
 set "PYTHON=python"
 if exist "%REPO_ROOT%\.venv\Scripts\python.exe" set "PYTHON=%REPO_ROOT%\.venv\Scripts\python.exe"
+if defined REVALIDATION_PYTHON set "PYTHON=%REVALIDATION_PYTHON%"
 
 rem Set to 1 to print commands only.
 set "DRY_RUN=0"
@@ -143,13 +144,13 @@ rem set "TESTLIST_CSV=.\dataset\SJTU-TMQA\SJTU-TMQA_MOS_normalized.csv"
 rem set "USE_FOLDS=0"
 rem set "RUN_TRAINING=0"
 
-rem --- PRESET F: BASICS, 5-fold (IMPORTANT: 4 views)
-rem set "RUN_NAME=BASICS_5FOLD_4VP"
-rem set "MODEL_NAME=BASICS_SP_4VP_kfolds"
+rem --- PRESET F: BASICS, SP_960x960/Y_fixed_0.3, 8-view 5-fold
+rem set "RUN_NAME=BASICS_SP960_YF03_8VP_5FOLD"
+rem set "MODEL_NAME=BASICS_SP960_yf03_8VP_kfolds"
 rem set "DATABASE=BASICS"
-rem set "VIEWS=4"
-rem set "VIEW_METHOD=Y_fixed_0"
-rem set "RENDER_METHOD=SP"
+rem set "VIEWS=8"
+rem set "VIEW_METHOD=Y_fixed_0.3"
+rem set "RENDER_METHOD=SP_960x960"
 rem set "MOS_CSV=.\dataset\BASICS\MOS_CI.csv"
 rem set "TESTLIST_CSV=.\dataset\BASICS\folds\MOS_CI_test20.csv"
 rem set "USE_FOLDS=1"
@@ -163,8 +164,8 @@ rem set "RUN_NAME=BASICS_ZEROSHOT"
 rem set "MODEL_NAME=TMQ_NR_8VP_yf03_kfolds"
 rem set "DATABASE=BASICS"
 rem set "VIEWS=8"
-rem set "VIEW_METHOD=Y_fixed_0"
-rem set "RENDER_METHOD=SP"
+rem set "VIEW_METHOD=Y_fixed_0.3"
+rem set "RENDER_METHOD=SP_960x960"
 rem set "MOS_CSV=.\dataset\BASICS\MOS_CI.csv"
 rem set "TESTLIST_CSV=.\dataset\BASICS\MOS_CI_01.csv"
 rem set "USE_FOLDS=0"
@@ -172,11 +173,11 @@ rem set "RUN_TRAINING=0"
 
 rem --- PRESET H: WPC, 5-fold
 rem set "RUN_NAME=WPC_5FOLD"
-rem set "MODEL_NAME=WPC_NR_8VP_yf03_kfolds"
+rem set "MODEL_NAME=WPC_SP960_yf03_8VP_kfolds"
 rem set "DATABASE=WPC"
 rem set "VIEWS=8"
 rem set "VIEW_METHOD=Y_fixed_0.3"
-rem set "RENDER_METHOD=New_Render"
+rem set "RENDER_METHOD=SP_960x960"
 rem set "MOS_CSV=.\dataset\WPC\WPC_MOS.csv"
 rem set "TESTLIST_CSV=.\dataset\WPC\folds\WPC_MOS_test20.csv"
 rem set "USE_FOLDS=1"
@@ -191,7 +192,7 @@ rem set "MODEL_NAME=TMQ_NR_8VP_yf03_kfolds"
 rem set "DATABASE=WPC"
 rem set "VIEWS=8"
 rem set "VIEW_METHOD=Y_fixed_0.3"
-rem set "RENDER_METHOD=New_Render"
+rem set "RENDER_METHOD=SP_960x960"
 rem set "MOS_CSV=.\dataset\WPC\WPC_MOS.csv"
 rem set "TESTLIST_CSV=.\dataset\WPC\WPC_MOS.csv"
 rem set "USE_FOLDS=0"
@@ -224,25 +225,25 @@ rem set "TESTLIST_CSV=.\dataset\WPC2\WPC2.0_MOS.csv"
 rem set "USE_FOLDS=0"
 rem set "RUN_TRAINING=0"
 
-rem --- PRESET L: WPC, SP/Circle, 5-fold trained checkpoint
-rem set "RUN_NAME=WPC_SP_CIRCLE_5FOLD"
-rem set "MODEL_NAME=WPC_SP_yf03_8VP_kfolds"
+rem --- PRESET L: WPC, SP_960x960/Y_fixed_0.3, 5-fold trained checkpoint
+rem set "RUN_NAME=WPC_SP960_YF03_8VP_5FOLD"
+rem set "MODEL_NAME=WPC_SP960_yf03_8VP_kfolds"
 rem set "DATABASE=WPC"
 rem set "VIEWS=8"
-rem set "VIEW_METHOD=Circle"
-rem set "RENDER_METHOD=SP"
+rem set "VIEW_METHOD=Y_fixed_0.3"
+rem set "RENDER_METHOD=SP_960x960"
 rem set "MOS_CSV=.\dataset\WPC\WPC_MOS.csv"
 rem set "TESTLIST_CSV=.\dataset\WPC\folds\WPC_MOS_test20.csv"
 rem set "USE_FOLDS=1"
 rem set "RUN_TRAINING=0"
 
-rem --- PRESET M: WPC, SP/Circle, zero-shot with TMQ trained checkpoint folds
-rem set "RUN_NAME=WPC_SP_CIRCLE_TMQ_ZEROSHOT"
+rem --- PRESET M: WPC, SP_960x960/Y_fixed_0.3, zero-shot with TMQ trained checkpoint folds
+rem set "RUN_NAME=WPC_SP960_YF03_8VP_TMQ_ZEROSHOT"
 rem set "MODEL_NAME=TMQ_NR_8VP_yf03_kfolds"
 rem set "DATABASE=WPC"
 rem set "VIEWS=8"
-rem set "VIEW_METHOD=Circle"
-rem set "RENDER_METHOD=SP"
+rem set "VIEW_METHOD=Y_fixed_0.3"
+rem set "RENDER_METHOD=SP_960x960"
 rem set "MOS_CSV=.\dataset\WPC\WPC_MOS.csv"
 rem set "TESTLIST_CSV=.\dataset\WPC\WPC_MOS.csv"
 rem set "USE_FOLDS=1"
@@ -299,6 +300,12 @@ set "TRAIN_NEPOCH=5"
 set "TRAIN_NEPOCH_DECAY=5"
 set "TRAIN_SAVE_EPOCH_FREQ=10"
 set "TRAIN_NTHREADS=8"
+if defined REVALIDATION_NPATCHES set "TRAIN_NPATCHES=%REVALIDATION_NPATCHES%"
+if defined REVALIDATION_NINPUTIMG set "TRAIN_NINPUTIMG=%REVALIDATION_NINPUTIMG%"
+if defined REVALIDATION_NEPOCH set "TRAIN_NEPOCH=%REVALIDATION_NEPOCH%"
+if defined REVALIDATION_NEPOCH_DECAY set "TRAIN_NEPOCH_DECAY=%REVALIDATION_NEPOCH_DECAY%"
+if defined REVALIDATION_SAVE_EPOCH_FREQ set "TRAIN_SAVE_EPOCH_FREQ=%REVALIDATION_SAVE_EPOCH_FREQ%"
+if defined REVALIDATION_NTHREADS set "TRAIN_NTHREADS=%REVALIDATION_NTHREADS%"
 set "TRAIN_FOLDS_FLAG="
 if "%USE_FOLDS%"=="1" set "TRAIN_FOLDS_FLAG=--use_folds"
 
@@ -482,14 +489,16 @@ echo   TSMD_5FOLD
 echo   TSMD_ZEROSHOT
 echo   SJTU_TMQA_5FOLD
 echo   SJTU_TMQA_ZEROSHOT
-echo   BASICS_5FOLD_4VP
+echo   BASICS_SP960_YF03_8VP_5FOLD
 echo   BASICS_ZEROSHOT
 echo   WPC_5FOLD
 echo   WPC_ZEROSHOT
 echo   WPC2_5FOLD
 echo   WPC2_ZEROSHOT
-echo   WPC_SP_CIRCLE_5FOLD
-echo   WPC_SP_CIRCLE_TMQ_ZEROSHOT
+echo   WPC_SP960_YF03_8VP_5FOLD
+echo   WPC_SP960_YF03_8VP_TMQ_ZEROSHOT
+echo   BASICS_SP960_YF03_8VP_5FOLD_TEST
+echo   WPC_SP960_YF03_8VP_5FOLD_TEST
 echo.
 echo Notes:
 echo   - If no --preset is provided, the active preset block in the script is used.
@@ -579,12 +588,33 @@ if /I "%PRESET_NAME%"=="SJTU_TMQA_ZEROSHOT" (
 )
 
 if /I "%PRESET_NAME%"=="BASICS_5FOLD_4VP" (
-  set "RUN_NAME=BASICS_5FOLD_4VP"
-  set "MODEL_NAME=BASICS_SP_4VP_kfolds"
+  set "PRESET_NAME=BASICS_SP960_YF03_8VP_5FOLD"
+)
+
+if /I "%PRESET_NAME%"=="BASICS_SP960_YF03_8VP_5FOLD" (
+  set "RUN_NAME=BASICS_SP960_YF03_8VP_5FOLD"
+  set "MODEL_NAME=BASICS_SP960_yf03_8VP_kfolds"
   set "DATABASE=BASICS"
-  set "VIEWS=4"
-  set "VIEW_METHOD=Y_fixed_0"
-  set "RENDER_METHOD=SP"
+  set "VIEWS=8"
+  set "VIEW_METHOD=Y_fixed_0.3"
+  set "RENDER_METHOD=SP_960x960"
+  set "MOS_CSV=.\dataset\BASICS\MOS_CI.csv"
+  set "TESTLIST_CSV=.\dataset\BASICS\folds\MOS_CI_test20.csv"
+  set "USE_FOLDS=1"
+  set "RUN_TRAINING=1"
+  set "TRAIN_DATASETS=%REPO_ROOT%\dataset\BASICS\folds\MOS_CI_train80.csv"
+  set "TRAIN_TESTCSV=%REPO_ROOT%\dataset\BASICS\folds\MOS_CI_test20.csv"
+  set "TRAIN_TARGET=mos"
+  exit /b 0
+)
+
+if /I "%PRESET_NAME%"=="BASICS_SP960_YF03_8VP_5FOLD_TEST" (
+  set "RUN_NAME=BASICS_SP960_YF03_8VP_5FOLD_TEST"
+  set "MODEL_NAME=BASICS_SP960_yf03_8VP_kfolds_test"
+  set "DATABASE=BASICS"
+  set "VIEWS=8"
+  set "VIEW_METHOD=Y_fixed_0.3"
+  set "RENDER_METHOD=SP_960x960"
   set "MOS_CSV=.\dataset\BASICS\MOS_CI.csv"
   set "TESTLIST_CSV=.\dataset\BASICS\folds\MOS_CI_test20.csv"
   set "USE_FOLDS=1"
@@ -600,8 +630,8 @@ if /I "%PRESET_NAME%"=="BASICS_ZEROSHOT" (
   set "MODEL_NAME=TMQ_NR_8VP_yf03_kfolds"
   set "DATABASE=BASICS"
   set "VIEWS=8"
-  set "VIEW_METHOD=Y_fixed_0"
-  set "RENDER_METHOD=SP"
+  set "VIEW_METHOD=Y_fixed_0.3"
+  set "RENDER_METHOD=SP_960x960"
   set "MOS_CSV=.\dataset\BASICS\MOS_CI.csv"
   set "TESTLIST_CSV=.\dataset\BASICS\MOS_CI_01.csv"
   set "USE_FOLDS=0"
@@ -611,11 +641,28 @@ if /I "%PRESET_NAME%"=="BASICS_ZEROSHOT" (
 
 if /I "%PRESET_NAME%"=="WPC_5FOLD" (
   set "RUN_NAME=WPC_5FOLD"
-  set "MODEL_NAME=WPC_NR_8VP_yf03_kfolds"
+  set "MODEL_NAME=WPC_SP960_yf03_8VP_kfolds"
   set "DATABASE=WPC"
   set "VIEWS=8"
   set "VIEW_METHOD=Y_fixed_0.3"
-  set "RENDER_METHOD=New_Render"
+  set "RENDER_METHOD=SP_960x960"
+  set "MOS_CSV=.\dataset\WPC\WPC_MOS.csv"
+  set "TESTLIST_CSV=.\dataset\WPC\folds\WPC_MOS_test20.csv"
+  set "USE_FOLDS=1"
+  set "RUN_TRAINING=1"
+  set "TRAIN_DATASETS=%REPO_ROOT%\dataset\WPC\folds\WPC_MOS_train80.csv"
+  set "TRAIN_TESTCSV=%REPO_ROOT%\dataset\WPC\folds\WPC_MOS_test20.csv"
+  set "TRAIN_TARGET=mos"
+  exit /b 0
+)
+
+if /I "%PRESET_NAME%"=="WPC_SP960_YF03_8VP_5FOLD_TEST" (
+  set "RUN_NAME=WPC_SP960_YF03_8VP_5FOLD_TEST"
+  set "MODEL_NAME=WPC_SP960_yf03_8VP_kfolds_test"
+  set "DATABASE=WPC"
+  set "VIEWS=8"
+  set "VIEW_METHOD=Y_fixed_0.3"
+  set "RENDER_METHOD=SP_960x960"
   set "MOS_CSV=.\dataset\WPC\WPC_MOS.csv"
   set "TESTLIST_CSV=.\dataset\WPC\folds\WPC_MOS_test20.csv"
   set "USE_FOLDS=1"
@@ -632,7 +679,7 @@ if /I "%PRESET_NAME%"=="WPC_ZEROSHOT" (
   set "DATABASE=WPC"
   set "VIEWS=8"
   set "VIEW_METHOD=Y_fixed_0.3"
-  set "RENDER_METHOD=New_Render"
+  set "RENDER_METHOD=SP_960x960"
   set "MOS_CSV=.\dataset\WPC\WPC_MOS.csv"
   set "TESTLIST_CSV=.\dataset\WPC\WPC_MOS.csv"
   set "USE_FOLDS=0"
@@ -672,26 +719,37 @@ if /I "%PRESET_NAME%"=="WPC2_ZEROSHOT" (
 )
 
 if /I "%PRESET_NAME%"=="WPC_SP_CIRCLE_5FOLD" (
-  set "RUN_NAME=WPC_SP_CIRCLE_5FOLD"
-  set "MODEL_NAME=WPC_SP_yf03_8VP_kfolds"
+  set "PRESET_NAME=WPC_SP960_YF03_8VP_5FOLD"
+)
+
+if /I "%PRESET_NAME%"=="WPC_SP960_YF03_8VP_5FOLD" (
+  set "RUN_NAME=WPC_SP960_YF03_8VP_5FOLD"
+  set "MODEL_NAME=WPC_SP960_yf03_8VP_kfolds"
   set "DATABASE=WPC"
   set "VIEWS=8"
-  set "VIEW_METHOD=Circle"
-  set "RENDER_METHOD=SP"
+  set "VIEW_METHOD=Y_fixed_0.3"
+  set "RENDER_METHOD=SP_960x960"
   set "MOS_CSV=.\dataset\WPC\WPC_MOS.csv"
   set "TESTLIST_CSV=.\dataset\WPC\folds\WPC_MOS_test20.csv"
   set "USE_FOLDS=1"
-  set "RUN_TRAINING=0"
+  set "RUN_TRAINING=1"
+  set "TRAIN_DATASETS=%REPO_ROOT%\dataset\WPC\folds\WPC_MOS_train80.csv"
+  set "TRAIN_TESTCSV=%REPO_ROOT%\dataset\WPC\folds\WPC_MOS_test20.csv"
+  set "TRAIN_TARGET=mos"
   exit /b 0
 )
 
 if /I "%PRESET_NAME%"=="WPC_SP_CIRCLE_TMQ_ZEROSHOT" (
-  set "RUN_NAME=WPC_SP_CIRCLE_TMQ_ZEROSHOT"
+  set "PRESET_NAME=WPC_SP960_YF03_8VP_TMQ_ZEROSHOT"
+)
+
+if /I "%PRESET_NAME%"=="WPC_SP960_YF03_8VP_TMQ_ZEROSHOT" (
+  set "RUN_NAME=WPC_SP960_YF03_8VP_TMQ_ZEROSHOT"
   set "MODEL_NAME=TMQ_NR_8VP_yf03_kfolds"
   set "DATABASE=WPC"
   set "VIEWS=8"
-  set "VIEW_METHOD=Circle"
-  set "RENDER_METHOD=SP"
+  set "VIEW_METHOD=Y_fixed_0.3"
+  set "RENDER_METHOD=SP_960x960"
   set "MOS_CSV=.\dataset\WPC\WPC_MOS.csv"
   set "TESTLIST_CSV=.\dataset\WPC\WPC_MOS.csv"
   set "USE_FOLDS=1"
