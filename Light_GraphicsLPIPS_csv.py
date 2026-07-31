@@ -36,6 +36,12 @@ parser.add_argument("-testlist", "--test_list_csv", type=str, required=True)
 parser.add_argument("--src_root", type=str, default=".", help="root directory containing Source/ and Distorted/ experiment folders")
 opt = parser.parse_args()
 
+if opt.use_gpu and not torch.cuda.is_available():
+    raise SystemExit(
+        "This evaluation script is CUDA-only and requires an NVIDIA GPU with a "
+        "matching CUDA PyTorch build (see the README Installation section)."
+    )
+
 model = opt.model
 modelpath = "./checkpoints/" + model + "/latest_net_.pth"
 use_folds = opt.use_folds

@@ -189,8 +189,15 @@ def main():
     parser.add_argument('--overwrite', action='store_true', help='retrain folds whose checkpoint directory already exists (default: skip them)')
 
     opt = parser.parse_args()
+
+    if not torch.cuda.is_available():
+        raise SystemExit(
+            "train.py is CUDA-only and requires an NVIDIA GPU with a matching CUDA "
+            "PyTorch build (see the README Installation section)."
+        )
+
     opt.batch_size = opt.npatches * opt.nInputImg
-    
+
     opt.save_dir = os.path.join(opt.checkpoints_dir,opt.name)
     if(not os.path.exists(opt.save_dir)):
         os.mkdir(opt.save_dir)
