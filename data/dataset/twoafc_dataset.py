@@ -172,7 +172,6 @@ class TwoAFCDataset(Dataset):
 
         self._ssd_map = {}
         self._pil_cache = {}
-        self._judge_cache = {}
 
         if not isinstance(dataroots, list):
             dataroots = [dataroots]
@@ -306,13 +305,9 @@ class TwoAFCDataset(Dataset):
         ref_patch = load_patch(ref_img, entry["x"], entry["y"], entry["patch_size"])
         dis_patch = load_patch(dis_img, entry["x"], entry["y"], entry["patch_size"])
 
-        if self.target == "judges":
-            judge = torch.from_numpy(np.load(entry["judge_path"])).float().view(1, 1, 1)
-        else:
-            judge = None
-
-        jp = entry["judge_path"]
-        judge = self._judge_cache.get(jp)
+        # Per-observer "judges" supervision is not wired up (the loaded value used
+        # to be discarded via an empty cache); training is supervised by MOS below.
+        judge = None
 
         out = {
             "ref": ref_patch,

@@ -23,16 +23,14 @@ def is_match_fuzz(name1, name2, threshold=90):
     return n1 == n2 or fuzz.ratio(n1, n2) > threshold
 
 
-def normalize_name(name):
-    return name.lower().replace("_", "").strip()
-
-
 def normalize_mos(mos_array, method="auto"):
     """Normalize MOS values from [min, max] where max is best quality to [0, 1], where 0 is best quality."""
     if method == "autoInvert":
         return 1 - (mos_array - mos_array.min()) / (mos_array.max() - mos_array.min())
     elif method == "auto":
         return (mos_array - mos_array.min()) / (mos_array.max() - mos_array.min())
+
+
 def normalize_name(name: str) -> str:
     name = name.lower()
     name = re.sub(r'\(.*?\)', '', name)     # remove parentheses content
