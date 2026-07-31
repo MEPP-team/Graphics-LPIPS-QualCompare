@@ -3,6 +3,8 @@ __pycache__/
 
 .vscode/
 .vs/
+.venv/
+venv/
 
 out/
 checkpoints/*
