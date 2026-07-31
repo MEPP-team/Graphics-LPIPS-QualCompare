@@ -183,6 +183,7 @@ for fold_idx, ref_obj_list in enumerate(ref_obj_list_folds):
                         patch0 = refimg[y : y + patchSize, x : x + patchSize]
                         patch1 = disimg[y : y + patchSize, x : x + patchSize]
                         if patch0.shape[:2] != (patchSize, patchSize) or patch1.shape[:2] != (patchSize, patchSize):
+                            line_count += 1  # keep line_count in sync with CSV rows (mirror revalidation_common)
                             continue
                         patches0.append(patch0)
                         patches1.append(patch1)

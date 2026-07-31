@@ -411,10 +411,10 @@ def calculate_correlation_all_vps_combined(
                 lpips_vals = clamp01(np.array([float(x) for x in row[2:]], dtype=float))
                 if invert_scores:
                     lpips_vals = 1.0 - lpips_vals
-                else:
-                    lpips_vals = np.array([x for x in lpips_vals if x != 0.0], dtype=float)
                 if lpips_vals.size == 0:
                     continue
+                # Average over all rendered viewpoints (paper §4.3), consistent with
+                # the per-object path above; do not drop zero-valued views.
                 avg_lpips = np.mean(lpips_vals)
 
                 all_mos.append(mos)
