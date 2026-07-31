@@ -1,530 +1,213 @@
-﻿
 # Graphics-LPIPS-QualCompare
 
-Graphics-LPIPS-QualCompare is a Graphics-LPIPS fork for perceptual quality assessment of textured 3D meshes using rendered multi-view data prepared with QualCompare.
+Graphics-LPIPS-QualCompare is a fork of [Graphics-LPIPS](https://github.com/MEPP-team/Graphics-LPIPS), a perceptual quality metric for 3D graphics. Graphics-LPIPS-QualCompare aims at facilitating a controlled evaluation (training and testing) on any datasets, especially using multi-view renderings produced by the companion tool
+[QualCompare](https://github.com/MEPP-team/QualCompare).
 
-Instead of predicting similarity between isolated 2D image patches only, this repository focuses on:
 
-- patch-based comparison of rendered views of 3D objects
-- MOS / DSIS-style supervision
-- training on rendered textured-mesh data
-- evaluation of distorted objects from one or multiple viewpoints
-- correlation analysis between predicted scores and subjective quality scores
+## How the metric works
 
-This repository is based on the Graphics-LPIPS research line introduced in the paper:
-[Textured Mesh Quality Assessment: Large-Scale Dataset and Deep Learning-based Quality Metric](https://yananehme.github.io/publications/2022-ACM-TOG)
+For each object, patches are sampled on the **reference** views (the patch lists
+produced by QualCompare) and read at the same coordinates from the **distorted**
+views. The score is aggregated in three steps:
 
-This workflow is also associated with the QualCompare revalidation paper:
-*Towards Reproducible Image-based 3D quality assessment: integrated software and new results*.
+1. per patch: a learned Graphics-LPIPS distance (AlexNet backbone + trained linear
+   layers);
+2. per view: the mean over its patches;
+3. per object: the mean over the rendered views.
 
-## Quick Links
+Object scores are mapped to the subjective scale with a binomial GLM; PLCC and
+SROCC are computed after mapping. Under k-fold cross-validation, the reported PLCC
+is the mean of the per-fold values.
 
-- **Paper revalidation guide**: [paper_revalidation/README.md](paper_revalidation/README.md) - Full revalidation workflow and results interpretation
-- Quick metric usage: [QUICKSTART_METRIC.md](QUICKSTART_METRIC.md) - Fast setup for custom datasets
-- Command templates: [scripts/README.md](scripts/README.md)
-- Revalidation helper: [paper_revalidation/revalidate_table_qualcompare.bat](paper_revalidation/revalidate_table_qualcompare.bat)
+## Repository entry points
 
-## Repository Focus
+| Script | Role |
+|---|---|
+| `Light_GraphicsLPIPS_csv.py` | Evaluate a checkpoint on rendered views (patches reconstructed in memory). Recommended evaluation path. |
+| `train.py` | Train a Graphics-LPIPS model on rendered data. |
+| `correlation_VP.py` | Compute PLCC/SROCC summaries from evaluation outputs. |
 
-The current public codebase is organized around three main entrypoints:
+## Requirements
 
-- `train.py`: train a Graphics-LPIPS model on the textured mesh dataset
-- `Light_GraphicsLPIPS_csv.py`: evaluate a trained checkpoint on rendered multi-view data using in-memory patch extraction
-- `correlation_VP.py`: compute correlation summaries and plots from evaluation outputs
-
-`Light_GraphicsLPIPS_csv.py` is the recommended evaluation script for the current workflow.
+- **Python 3.12** (paper environment: 3.12.10).
+- **An NVIDIA GPU with CUDA.** Training and evaluation are CUDA-only in the current
+  code (CPU execution is not supported).
+- Python dependencies from `requirements.txt`. The paper environment is
+  PyTorch 2.7.0 (CUDA 12.8, cuDNN 9.7.1) and OpenCV 4.11.0.86.
 
 ## Installation
-
-Install PyTorch and torchvision first, then install the Python dependencies:
-
-```bash
-pip install -r requirements.txt
-```
-
-Clone the repository:
 
 ```bash
 git clone https://github.com/MEPP-team/Graphics-LPIPS-QualCompare.git
 cd Graphics-LPIPS-QualCompare
+
+# Install the CUDA build of PyTorch first (PyPI ships the CPU build):
+pip install torch==2.7.0 torchvision==0.22.0 --index-url https://download.pytorch.org/whl/cu128
+pip install -r requirements.txt
 ```
 
-## Dataset
+## Pretrained checkpoint
 
-This metric is only meaningful when used with the associated textured mesh quality dataset. The repository does not ship the dataset itself.
-
-You need two complementary inputs depending on what you want to do:
-
-- the object datasets used as the source for validation and rendering
-- the rendered image dataset used directly by the metric workflow
-
-The recommended workflow is now:
-
-1. Download the main textured mesh quality dataset:
-   https://datasets.liris.cnrs.fr/textured-mesh-quality-assessment-dataset-version1
-2. Download the rendered image dataset used for revalidation and evaluation:
-  https://datasets.liris.cnrs.fr/qualcomparerendered-version1
-3. If you prefer to regenerate the rendered images yourself, use the companion tool `QualCompare` together with the relevant object datasets for validation.
-4. Train or evaluate Graphics-LPIPS-QualCompare on the rendered outputs.
-
-The historical patchified archive from the original project is no longer the primary path for this fork. It is mostly useful for compatibility with the older workflow:
-
-- Historical patchified archive:
-  https://perso.liris.cnrs.fr/ynehme/datasets/Graphics-Lpips/dataset.zip
-
-This fork is designed to work alongside the companion rendering pipeline rather than depend on a pre-patchified dataset archive.
-
-## Companion Tool
-
-To fully use the updated workflow, this repository should be used together with `QualCompare`, which prepares the rendered views and patch metadata expected by the current evaluation and training scripts.
-
-Companion repository:
-
-- `QualCompare`: https://github.com/MEPP-team/QualCompare
-
-In practice:
-
-- the main dataset provides the textured 3D objects and associated subjective data
-- `QualCompare` renders the objects and produces the image / patch structure expected by this repository
-- `Graphics-LPIPS-QualCompare` trains on or evaluates those rendered outputs
-
-### Expected Rendered Structure
-
-The current workflow expects a rendered directory layout of the following form:
+The repository ships `checkpoints/TMQ_NR_8VP_yf03_kfolds`, trained on the Textured
+Mesh Quality (TMQ) dataset with 8 views per object and the `Y_fixed` camera at a
+0.3 height offset. It contains **five fold checkpoints**:
 
 ```text
-<EXPERIMENT_ROOT>/
-  Source/
-    <N>VP/
-      <REFERENCE_OBJECT>/
-        views/
-          view_1.png
-          view_2.png
-          ...
-        patchs/
-          <REFERENCE_OBJECT>_patchlist.csv
-  Distorted/
-    <N>VP/
-      <DISTORTED_OBJECT>/
-        views/
-          view_1.png
-          view_2.png
-          ...
+checkpoints/TMQ_NR_8VP_yf03_kfolds/fold_k0/latest_net_.pth
+...                               /fold_k4/latest_net_.pth
 ```
 
-Important note:
+There is no single top-level weight file, so this checkpoint must be used with the
+`--use_folds` flag (evaluation runs each fold and averages the results). It enables
+zero-shot evaluation on other datasets without retraining.
 
-- the folder name is currently `patchs` in the codebase, not `patches`
-- `Light_GraphicsLPIPS_csv.py` expects `--src_root` to point to `<EXPERIMENT_ROOT>`
-- `train.py` expects `--src_root`, `--root_refPatches`, and `--root_distPatches` to match that rendered structure
+## Data
 
-## Prepare the Dataset Layout
+The datasets are not bundled (size and licensing). The repository ships only the
+CSV splits, folds and MOS files under `dataset/`.
 
-The scripts expect each dataset to be reachable as `<SRC_ROOT>/Source/<N>VP/` and
-`<SRC_ROOT>/Distorted/<N>VP/` (see [Expected Rendered Structure](#expected-rendered-structure)).
+The companion dataset <https://datasets.liris.cnrs.fr/qualcomparerendered-version1>
+provides rendered views, masks and patch data for 5 mesh and point cloud datasets
+(TMQ, TSMD, SJTU-TMQA, BASICS and WPC) that are suited to be used with Graphics-LPIPS-QualCompare.
 
-However, the published rendered dataset
-([qualcomparerendered](https://datasets.liris.cnrs.fr/qualcomparerendered-version1))
-extracts to a **flat, per-dataset** layout, without the `Source/<N>VP` wrapper:
+Alternatively, renders can be regenerated with [QualCompare](https://github.com/MEPP-team/QualCompare) from the source objects.
+
+### Expected layout
+
+The scripts read each dataset from `<SRC_ROOT>/Source/<N>VP/` and
+`<SRC_ROOT>/Distorted/<N>VP/`:
 
 ```text
-<DATASET_ROOT>/
-  TMQ_Circle_0.3_8VP_source/<REFERENCE_OBJECT>/{views, masks, patchs}
-  TMQ_Circle_0.3_8VP_distorted/<DISTORTED_OBJECT>/{views, masks}
-  ...
-  dataset_info.json
+<SRC_ROOT>/
+  Source/<N>VP/<REFERENCE_OBJECT>/
+    views/   view_1.png, view_2.png, ...
+    patchs/  <REFERENCE_OBJECT>_patchlist.csv
+  Distorted/<N>VP/<DISTORTED_OBJECT>/
+    views/   view_1.png, view_2.png, ...
 ```
 
-So, **before running training or evaluation**, expose each dataset in the expected
-layout. The helper script does this with directory junctions (Windows) or symlinks
-(Linux/macOS), so the (tens of GB of) images are **not copied**:
+- The folder is named `patchs` (not `patches`).
+- Patch CSVs are required only under `Source/`.
+- `<N>VP` must match the `-v` argument; images must be PNG.
 
-Windows (PowerShell):
+### Preparing the layout from the published dataset
+
+The published rendered dataset extracts to a **flat** per-dataset layout
+(`<NAME>_source/`, `<NAME>_distorted/`) that does **not** match the structure
+above. Map it with the helper script, which creates directory junctions (Windows)
+or symlinks (Linux/macOS) — no image is copied:
 
 ```powershell
 scripts\prepare_dataset_layout.ps1 -DatasetRoot "D:\path\to\qualcomparerendered"
 ```
 
-Linux/macOS:
-
 ```bash
 scripts/prepare_dataset_layout.sh /path/to/qualcomparerendered
 ```
 
-The script reads `dataset_info.json` (or falls back to the 5 known datasets) and
-creates `<DATASET_ROOT>/_run/<DB>/Source/<N>VP` and `.../Distorted/<N>VP` for each
-dataset, then prints the `--src_root` to use, e.g.:
+The script reads `dataset_info.json`, creates
+`<DATASET_ROOT>/_run/<DB>/Source/<N>VP` (and `Distorted/<N>VP`) for each dataset,
+and prints the `--src_root` to pass to the Python scripts:
 
 ```text
 [ok] TMQ        --src_root "D:\path\to\qualcomparerendered\_run\TMQ"
 [ok] TSMD       --src_root "D:\path\to\qualcomparerendered\_run\TSMD"
 ```
 
-Pass that path to the scripts, for example (TSMD, zero-shot with the shipped
-checkpoint):
+For the `paper_revalidation` batch scripts, use `-ForBat` / `--forbat` instead (it
+builds the deeper `<DB>/<RENDER_METHOD>/<VIEW_METHOD>` layout those scripts expect)
+and set `QUALCOMPARE_OUT_ROOT` to the printed `_run` folder. Add `-Remove` to
+delete the junctions later.
+
+## Usage
+
+All commands require a CUDA GPU (`--use_gpu`).
+
+### Evaluate a checkpoint
+
+Example — zero-shot evaluation of the shipped TMQ checkpoint on TSMD:
 
 ```bash
-python Light_GraphicsLPIPS_csv.py -m TMQ_NR_8VP_yf03_kfolds --use_folds -v 8 \
-  -vm Y_fixed_0.3 -rm New_Render -db TSMD \
-  -mos ./dataset/TSMD/_TSMD_fulldataset.csv \
-  -testlist ./dataset/TSMD/_TSMD_fulldataset.csv \
-  --src_root "D:\path\to\qualcomparerendered\_run\TSMD" --use_gpu
+python Light_GraphicsLPIPS_csv.py -m TMQ_NR_8VP_yf03_kfolds --use_folds -v 8 -vm Y_fixed_0.3 -rm New_Render -db TSMD -mos ./dataset/TSMD/_TSMD_fulldataset.csv -testlist ./dataset/TSMD/_TSMD_fulldataset.csv --src_root "<SRC_ROOT>/TSMD" --use_gpu
 ```
 
-### For the `paper_revalidation` batch scripts
+Per-object metric CSVs are written under
+`out/<DB>/<RENDER_METHOD>/<VIEW_METHOD>/<MODEL>/<N>VP/`.
 
-The `.bat` presets build `SRC_ROOT` as
-`<QUALCOMPARE_OUT_ROOT>/<DB>/<RENDER_METHOD>/<VIEW_METHOD>`. Create that deeper
-layout with `-ForBat` (Windows) / `--forbat` (Linux), then export the root:
+### Compute correlations
+
+```bash
+python correlation_VP.py -m TMQ_NR_8VP_yf03_kfolds --use_folds -v 8 -vm Y_fixed_0.3 -rm New_Render -db TSMD --out_root ./out
+```
+
+This writes `correlation_folds_stats.csv` (per-fold and mean PLCC/SROCC) in the
+experiment directory.
+
+### Train a model
+
+Example — 5-fold training on TMQ (8 views); `--use_folds` appends `_kX` to the
+train/test CSV names:
+
+```bash
+python train.py --name TMQ_8VP_example --use_folds --src_root "<SRC_ROOT>/TMQ" --datasets ./dataset/TMQ/folds/TexturedDB_80_TrainList_withnbPatchesPerVP_threth0.6.csv --testcsv ./dataset/TMQ/folds/TexturedDB_20_TestList_withnbPatchesPerVP_threth0.6.csv --root_refPatches Source/8VP --root_distPatches Distorted/8VP --target mos --net alex --npatches 150 --nInputImg 4 --nepoch 5 --nepoch_decay 5 --use_gpu
+```
+
+Checkpoints are written under `checkpoints/TMQ_8VP_example/fold_k*/`. Folds whose
+directory already exists are skipped unless `--overwrite` is given.
+
+Copy-and-adapt single-line templates are provided in `scripts/`
+(`train_metric.txt`, `evaluate_metric.txt`, `correlate_metric.txt`); see
+[scripts/README.md](scripts/README.md).
+
+## Reproducing the paper
+
+The `paper_revalidation/` folder automates the paper's table (trained and zero-shot
+rows) and the fixed baselines (LPIPS via `torchmetrics`, SSIM via `scikit-image`).
 
 ```powershell
 scripts\prepare_dataset_layout.ps1 -DatasetRoot "D:\path\to\qualcomparerendered" -ForBat
 set QUALCOMPARE_OUT_ROOT=D:\path\to\qualcomparerendered\_run
+paper_revalidation\revalidate_table_qualcompare.bat --dry-run --preset TSMD_ZEROSHOT
+paper_revalidation\revalidate_table_qualcompare.bat --preset TSMD_ZEROSHOT
 ```
 
-```bash
-scripts/prepare_dataset_layout.sh /path/to/qualcomparerendered --forbat
-export QUALCOMPARE_OUT_ROOT=/path/to/qualcomparerendered/_run
-```
+See [paper_revalidation/README.md](paper_revalidation/README.md) for the full list
+of presets and the fixed-baseline pipeline.
 
-See [paper_revalidation/README.md](paper_revalidation/README.md) for the batch workflow.
+## Dataset CSV formats
 
-To undo the junctions later (the source images are never touched):
+- **Training CSV** (`--datasets` / `--testcsv`): columns `Model,stimulus,MOS`, where
+  `Model` is the reference object and `stimulus` is the distorted object folder name.
+- **MOS CSV** (`-mos`) and **test list** (`-testlist`): the reference/stimulus and
+  MOS columns are detected from the header (e.g. `stimulus`/`name`/`ppc` and
+  `mos`/`dmos`).
 
-```powershell
-scripts\prepare_dataset_layout.ps1 -DatasetRoot "D:\path\to\qualcomparerendered" -Remove
-```
+Training targets follow a distortion-distance convention (`0` = close to the
+reference, `1` = strongly distorted). Source MOS scales differ across datasets, so
+values must be rescaled/inverted accordingly before training; the CSVs shipped
+under `dataset/` are already prepared.
 
-## Expected Local Resources
-
-In practice, this repository assumes that:
-
-- `dataset/` contains CSV splits, folds, and dataset metadata used by training and evaluation
-- rendered reference and distorted views are available in the directory structure generated by `QualCompare`
-- checkpoints are stored in `./checkpoints`
-- generated experiment outputs are written to `./out`
-
-Because of file size, licensing, and reproducibility concerns, the dataset is intentionally not bundled in this repository. Download it separately before running training or evaluation.
-
-After setup, a typical working tree looks like:
+## Repository layout
 
 ```text
-Graphics-LPIPS-QualCompare/
-  data/
-  lpips/
-  util/
-  dataset/
-    <dataset csv files and folds>
-  checkpoints/
-    <trained models>
-  out/
-    <generated evaluation outputs>
+train.py                    training entry point
+Light_GraphicsLPIPS_csv.py  evaluation entry point
+correlation_VP.py           correlation analysis
+ssim.py                     SSIM baseline wrapper
+data/                       data-loading pipeline
+lpips/                      Graphics-LPIPS network and trainer
+util/                       visualization and helpers
+scripts/                    command templates and prepare_dataset_layout
+paper_revalidation/         paper reproduction pipelines and fixed baselines
+dataset/                    CSV splits, folds and MOS files (runtime data not committed)
+checkpoints/                model weights (only the shipped TMQ checkpoint is committed)
+out/                        evaluation and correlation outputs (created at runtime)
 ```
 
-At minimum:
+## Citation
 
-- `dataset/` should contain the CSV files referenced by `train.py` and `Light_GraphicsLPIPS_csv.py`
-- `checkpoints/` should contain trained model weights when running evaluation
-- `out/` will be created by evaluation and correlation scripts
-
-If a public demo checkpoint is provided, it becomes possible to test the full evaluation pipeline without retraining a model first.
-
-## Typical Workflow
-
-### 0. Revalidate or reproduce an experiment
-
-If your goal is mainly to rerun a published or previous experience, start here:
-
-1. Make sure the rendered image dataset is available locally, or regenerate it with `QualCompare` from the object datasets you want to validate.
-2. Check [paper_revalidation/README.md](paper_revalidation/README.md) for the paper revalidation pipeline.
-3. Run [paper_revalidation/revalidate_table_qualcompare.bat](paper_revalidation/revalidate_table_qualcompare.bat) with `--dry-run` first, then remove `--dry-run` once the configuration matches your setup.
-
-### 1. Prepare the rendered dataset
-
-Download the main textured mesh dataset, then use `QualCompare` to render the reference and distorted objects and generate the patch metadata consumed by this repository.
-Don't forget to use the dataset structure described above.
-
-### 2. Train a model
-
-Training is driven by `train.py`.
-
-Example shape:
-
-```bash
-python train.py \
-  --datasets ./dataset/<TRAIN_SPLIT>.csv \
-  --testcsv ./dataset/<TEST_SPLIT>.csv \
-  --src_root <SRC_ROOT> \
-  --root_refPatches Source/4VP \
-  --root_distPatches Distorted/4VP \
-  --name <EXPERIMENT_NAME> \
-  --target mos \
-  --net alex \
-  --npatches 150 \
-  --nInputImg 4 \
-  --nepoch 5 \
-  --nepoch_decay 5 \
-  --use_gpu
-```
-
-Training writes checkpoints under `./checkpoints/<EXPERIMENT_NAME>/`.
-
-Concrete example:
-
-```bash
-python train.py \
-  --datasets ./dataset/TMQ/folds/TMQ_train_k0.csv \
-  --testcsv ./dataset/TMQ/folds/TMQ_test_k0.csv \
-  --src_root D:/RenderedDatasets/TMQ/New_Render/Y_fixed_0.3 \
-  --root_refPatches Source/4VP \
-  --root_distPatches Distorted/4VP \
-  --name TMQ_NR_4VP_example \
-  --target mos \
-  --net alex \
-  --npatches 150 \
-  --nInputImg 4 \
-  --nepoch 5 \
-  --nepoch_decay 5 \
-  --use_gpu
-```
-
-### 3. Evaluate a checkpoint
-
-The main evaluation path is `Light_GraphicsLPIPS_csv.py`.
-
-Example shape:
-
-```bash
-python Light_GraphicsLPIPS_csv.py \
-  -m <MODEL_NAME> \
-  -v <N_VIEWS> \
-  -vm <VIEW_METHOD> \
-  -rm <RENDER_METHOD> \
-  -db <DATABASE_NAME> \
-  -mos ./dataset/<MOS_FILE>.csv \
-  -testlist ./dataset/<TEST_LIST>.csv \
-  --src_root <EXPERIMENT_ROOT> \
-  --use_gpu
-```
-
-This script reconstructs patches in memory from rendered views instead of requiring a fully materialized patch dataset on disk for every evaluation run.
-
-`--src_root` should point to the directory that contains `Source/<N>VP/` and `Distorted/<N>VP/`.
-
-Concrete example:
-
-```bash
-python Light_GraphicsLPIPS_csv.py \
-  -m TMQ_NR_4VP_example \
-  -v 4 \
-  -vm Y_fixed_0.3 \
-  -rm New_Render \
-  -db TMQ \
-  -mos ./dataset/TMQ/TMQ_MOS.csv \
-  -testlist ./dataset/TMQ/folds/TMQ_test_k0.csv \
-  --src_root D:/RenderedDatasets/TMQ/New_Render/Y_fixed_0.3 \
-  --use_gpu
-```
-
-### 4. Compute correlations
-
-After evaluation, run:
-
-```bash
-python correlation_VP.py \
-  -m <MODEL_NAME> \
-  -v <N_VIEWS> \
-  -vm <VIEW_METHOD> \
-  -rm <RENDER_METHOD> \
-  -db <DATABASE_NAME> \
-  --out_root ./out
-```
-
-Outputs are typically written under `./out/...`.
-
-Concrete example:
-
-```bash
-python correlation_VP.py \
-  -m TMQ_NR_4VP_example \
-  -v 4 \
-  -vm Y_fixed_0.3 \
-  -rm New_Render \
-  -db TMQ \
-  --out_root ./out
-```
-
-## Ready-to-Adapt Command Files
-
-The `scripts/` directory contains command templates that can be copied and adapted to a local setup:
-
-- `scripts/train_metric.txt`
-- `scripts/evaluate_metric.txt`
-- `scripts/correlate_metric.txt`
-
-See also:
-
-- `scripts/README.md` for command-template notes
-- `paper_revalidation/README.md` for the complete paper revalidation pipeline
-
-## Quick Patch-Level Example
-
-For a simple sanity check between two patches:
-
-```bash
-python GraphicsLpips_2imgs.py \
-  -p0 imgs/ex_ref.png \
-  -p1 imgs/ex_p0.png \
-  --use_gpu
-```
-
-## Repository Layout
-
-- `train.py`: training entrypoint
-- `Light_GraphicsLPIPS_csv.py`: current evaluation entrypoint
-- `correlation_VP.py`: post-processing and correlation analysis
-- `data/`: data loading pipeline
-- `lpips/`: local LPIPS implementation and trainer
-- `util/`: visualization and utility helpers
-- `scripts/`: reusable command templates for training, evaluation, and correlation
-- `paper_revalidation/`: paper-oriented revalidation pipelines and fixed baseline scripts
-
-## Notes
-
-- Several scripts still reflect a research workflow and may contain environment-specific assumptions.
-- The current workflow assumes that rendered views and patch metadata come from the companion `QualCompare` pipeline.
-- `dataset/`, `checkpoints/`, and `out/` are runtime resources and are not committed here.
-
-## QualCompare Revalidation
-
-This repository includes the pre-trained checkpoint `TMQ_NR_8VP_yf03_kfolds`, which enables direct evaluation of Graphics-LPIPS-QualCompare on new datasets without retraining. This is the checkpoint used for the QualCompare revalidation workflow associated with *Towards Reproducible Image-based 3D quality assessment: integrated software and new results*.
-
-### Quick Start for Revalidation
-
-The easiest way to reproduce paper results is using the helper script:
-
-```bash
-# First, set the root containing your QualCompare renders
-set QUALCOMPARE_OUT_ROOT=D:\path\to\QualCompare\out
-paper_revalidation\revalidate_table_qualcompare.bat --dry-run
-
-# Review the commands, then run without --dry-run
-paper_revalidation\revalidate_table_qualcompare.bat
-```
-
-### Zero-Shot Evaluation Workflow
-
-To evaluate the pre-trained `TMQ_NR_8VP_yf03_kfolds` checkpoint on a custom dataset:
-
-1. **Prepare rendered views** with QualCompare from your 3D objects
-2. **Structure rendered data** according to the expected layout (see below)
-3. **Run evaluation** with `Light_GraphicsLPIPS_csv.py`
-4. **Compute correlations** with `correlation_VP.py`
-
-### Expected Image Directory Hierarchy
-
-The metric expects rendered images organized in a specific structure:
-
-```
-<SRC_ROOT>/
-├── Source/
-│   ├── 8VP/                          # Number of views must match -v argument
-│   │   ├── reference_obj_1/
-│   │   │   ├── views/
-│   │   │   │   ├── view_1.png
-│   │   │   │   ├── view_2.png
-│   │   │   │   └── ...
-│   │   │   └── patchs/
-│   │   │       └── reference_obj_1_patchlist.csv
-│   │   ├── reference_obj_2/
-│   │   │   └── ...
-│   │   └── ...
-│   └── <OTHER_VP>/                  # e.g., 4VP for 4-view models
-│       └── ...
-│
-└── Distorted/
-    ├── 8VP/
-    │   ├── distorted_obj_1_v1/
-    │   │   └── views/
-    │   │       ├── view_1.png
-    │   │       ├── view_2.png
-    │   │       └── ...
-    │   ├── distorted_obj_1_v2/
-    │   │   └── ...
-    │   └── ...
-    └── <OTHER_VP>/
-        └── ...
-```
-
-**Important notes:**
-
-- Use `patchs/` (not `patches/`): this is the folder name expected by the code
-- Patch CSV files are only required in Source, not in Distorted
-- The number of views (e.g., `8VP`) must match the `-v` argument in evaluation commands
-- Images must be PNG format
-- All objects under the same `<N>VP` folder must have the same number of views
-
-### Example: Evaluate on Custom Data
-
-```bash
-# Set up your rendered structure at, e.g., D:\MyRenders
-# Then run:
-
-python Light_GraphicsLPIPS_csv.py ^
-  -m TMQ_NR_8VP_yf03_kfolds ^
-  -v 8 ^
-  -vm Y_fixed_0.3 ^
-  -rm New_Render ^
-  -db CustomDB ^
-  -mos ./dataset/CustomDB/mos_scores.csv ^
-  -testlist ./dataset/CustomDB/test_list.csv ^
-  --src_root D:\MyRenders ^
-  --use_gpu
-```
-
-Then compute correlations:
-
-```bash
-python correlation_VP.py ^
-  -m TMQ_NR_8VP_yf03_kfolds ^
-  -v 8 ^
-  -vm Y_fixed_0.3 ^
-  -rm New_Render ^
-  -db CustomDB ^
-  --out_root ./out
-```
-
-### Dataset CSV Format
-
-- **MOS CSV** (`-mos`): Required format with columns `[object_name, mos_score]`
-- **Test List** (`-testlist`): Required format with columns `[object_name]` or similar, listing objects to evaluate
-- **Training CSV** (`train.py --datasets` / `--testcsv`): Required format with columns `Model,stimulus,MOS`, where `Model` is the reference object and `stimulus` is the distorted object folder name.
-
-Some dataset CSVs store MOS values that have been normalized for GraphicsLPIPS training. In that training setup, the target follows a distortion-distance convention: `0` means close to the reference and `1` means strongly distorted. When a source dataset provides quality MOS values where higher means better quality, those scores should be rescaled and inverted before training, for example:
-
-```text
-MOS_training = 1 - (MOS_original / 100)
-```
-
-### Checkpoint Details
-
-`TMQ_NR_8VP_yf03_kfolds`:
-- Trained on the Textured Mesh Quality (TMQ) dataset
-- Uses 8 views per object (`8VP`)
-- Fixed Y camera angle with 0.3 units height offset
-- Contains multiple fold checkpoints for k-fold validation
-- Weights can be found in `./checkpoints/TMQ_NR_8VP_yf03_kfolds/fold_k*/latest_net_.pth`
-
-## Reference
-
-Gautier Campagne, Florent Dupont, Guillaume Lavoué, Florence Denis, Johanna Delanoy, "Towards Reproducible Image-based 3D quality assessment: integrated software and new results".
-
-Yana Nehme, Johanna Delanoy, Florent Dupont, Jean-Philippe Farrugia, Patrick Le Callet, Guillaume Lavoue, "Textured Mesh Quality Assessment: Large-Scale Dataset and Deep Learning-based Quality Metric".
+Paper under review
 
 ## License
 
-This project is distributed under the Mozilla Public License v. 2.0. See `LICENSE-MPL2.txt`.
-
-
-
-
+Distributed under the Mozilla Public License 2.0. See `LICENSE-MPL2.txt`.
