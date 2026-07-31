@@ -550,7 +550,7 @@ if /I "%PRESET_NAME%"=="TSMD_ZEROSHOT" (
   set "VIEW_METHOD=Y_fixed_0"
   set "RENDER_METHOD=New_Render"
   set "MOS_CSV=.\dataset\TSMD\_TSMD_fulldataset.csv"
-  set "TESTLIST_CSV=.\dataset\TSMD\_TSMD_20%%_TestList_scaled_old.csv"
+  set "TESTLIST_CSV=.\dataset\TSMD\_TSMD_fulldataset.csv"
   set "USE_FOLDS=1"
   set "TESTLIST_HAS_FOLDS=0"
   set "RUN_TRAINING=0"
