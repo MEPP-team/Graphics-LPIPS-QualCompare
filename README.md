@@ -58,8 +58,18 @@ checkpoints/TMQ_NR_8VP_yf03_kfolds/fold_k0/latest_net_.pth
 ```
 
 There is no single top-level weight file, so this checkpoint must be used with the
-`--use_folds` flag (evaluation runs each fold and averages the results). It enables
-zero-shot evaluation on other datasets without retraining.
+`--use_folds` flag. It enables zero-shot evaluation on other datasets without
+retraining.
+
+**How the reported zero-shot (whole-set) score is computed.** With `--use_folds`
+on a dataset other than TMQ, the metric is evaluated on the *entire* target
+dataset **once per fold checkpoint** (the five TMQ folds), and `correlation_VP.py`
+reports the **mean of the five per-checkpoint PLCC values**. In other words, the
+"whole-set" number is an average over the five TMQ fold models, not the output of
+a single model. The five checkpoints agree closely (e.g. TSMD: 0.869–0.875), so
+the mean is stable. To obtain a single-model whole-set score instead, train one
+model on all of TMQ (without folds) and place it at
+`checkpoints/<NAME>/latest_net_.pth`.
 
 ## Data
 

@@ -120,6 +120,22 @@ This script can:
 2. evaluate a checkpoint with `Light_GraphicsLPIPS_csv.py`
 3. compute correlations with `correlation_VP.py`
 
+There are two preset families:
+
+- `*_5FOLD`: train **and** evaluate on the same dataset with 5-fold
+  cross-validation (`RUN_TRAINING=1`, `USE_FOLDS=1`). The reported PLCC is the mean
+  of the five per-fold values.
+- `*_ZEROSHOT`: evaluate the shipped `TMQ_NR_8VP_yf03_kfolds` checkpoint on another
+  dataset without retraining (`RUN_TRAINING=0`, `USE_FOLDS=1`,
+  `TESTLIST_HAS_FOLDS=0`).
+
+**How the zero-shot "whole-set" score is computed.** Because the shipped checkpoint
+has five fold weights and no single top-level model, a `*_ZEROSHOT` run evaluates
+the **entire** target dataset once with **each** of the five TMQ fold checkpoints,
+and reports the **mean of the five per-checkpoint PLCC values**. It is therefore an
+average over the five TMQ fold models, not a single-model score (the five agree
+closely, so the mean is stable).
+
 Available presets:
 
 - `TMQ_5FOLD`
