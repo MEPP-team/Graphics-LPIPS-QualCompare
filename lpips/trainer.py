@@ -160,11 +160,12 @@ class Trainer:
         self.p0  = input_dict["p0"].to(self.device, non_blocking=True).contiguous(memory_format=torch.channels_last)
         self.judge = input_dict["judge"].to(self.device, dtype=torch.float32, non_blocking=True).view(-1)
         self.stimulus = (input_dict.get("stimulus", input_dict.get("stimuli_id"))).to(self.device, dtype=torch.long, non_blocking=True).view(-1)
-        if not hasattr(self, "_io_dbg"):
-            print("[DBG] ref range after dataset:", float(self.ref.min()), float(self.ref.max()), self.ref.dtype)
-            self._io_dbg = True
-        self.var_ref = Variable(self.ref,requires_grad=True)
-        self.var_p0 = Variable(self.p0,requires_grad=True)
+        # Inputs do not require gradients (only the linear calibration layers are
+        # trained): keeping requires_grad=False avoids retaining the full backbone
+        # activations for unused input gradients, which drastically cuts training
+        # memory (e.g. the 150x4=600-patch mini-batch fits on a 12 GB GPU).
+        self.var_ref = self.ref
+        self.var_p0 = self.p0
     def _ensure_loss_tensor(self, loss: Any) -> torch.Tensor:
         if loss is None:
             raise RuntimeError("loss_total is None - nothing to backprop.")

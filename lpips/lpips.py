@@ -71,7 +71,7 @@ class LPIPS(nn.Module):
                     model_path = os.path.abspath(os.path.join(inspect.getfile(self.__init__), '..', 'weights/v%s/%s.pth'%(version,net)))
 
                 if(verbose):
-                    print('Loading modelssssssssssss from: %s'%model_path)
+                    print('Loading model from: %s'%model_path)
                 self.load_state_dict(torch.load(model_path, map_location='cpu'), strict=False)          
 
         if(eval_mode):

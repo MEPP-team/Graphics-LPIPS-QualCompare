@@ -221,7 +221,6 @@ def main():
             pnet_tune=opt.train_trunk,
             gpu_ids=[0]
         )
-        print("Model on:", next(trainer.net.parameters()).device)
         if(opt.use_folds):
             opt.save_dir = os.path.join(opt.checkpoints_dir,opt.name,'fold_k'+str(fold))
         else: 
@@ -299,10 +298,6 @@ def main():
                             pdev = next(trainer.net.parameters()).device
                         except StopIteration:
                             pdev = "no-params"
-                        print(f"[DEV] torch.cuda.is_available={torch.cuda.is_available()} | "
-                            f"net={pdev} | ref={trainer.ref.device} | p0={trainer.p0.device} | "
-                            f"amp={trainer.use_amp} dtype={trainer.amp_dtype}")
-                        print("ref dtype/range:", trainer.ref.dtype, float(trainer.ref.min()), float(trainer.ref.max()))
                         assert torch.cuda.is_available()
                         assert str(pdev).startswith("cuda")
                         assert str(trainer.ref.device).startswith("cuda")
