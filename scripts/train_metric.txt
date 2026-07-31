@@ -1,9 +1,9 @@
-python train.py ^
-  --name TMQ_<N>VP_example ^
-  --use_folds ^
-  --src_root D:/<PATH_TO_RENDERED_DATASETS>/<VIEWING_METHOD> ^
-  --datasets ./dataset/TMQ/folds/TexturedDB_80%%_TrainList_withnbPatchesPerVP_threth0.6.csv ^
-  --testcsv ./dataset/TMQ/folds/TexturedDB_20%%_TestList_withnbPatchesPerVP_threth0.6.csv ^
-  --root_refPatches Source/<N>VP ^
-  --root_distPatches Distorted/<N>VP ^
-  --target mos ^
+# Train Graphics-LPIPS on TMQ with 5-fold cross-validation.
+# Replace the <...> placeholders:
+#   <N>         number of views (e.g. 8)
+#   <SRC_ROOT>  folder that contains Source/<N>VP and Distorted/<N>VP
+#               (see README "Prepare the Dataset Layout").
+# With --use_folds, the _kX suffix is appended automatically to the CSV names below.
+# Single line: copy the whole command as-is (works in cmd, PowerShell and bash).
+
+python train.py --name TMQ_<N>VP_example --use_folds --src_root <SRC_ROOT> --datasets ./dataset/TMQ/folds/TexturedDB_80_TrainList_withnbPatchesPerVP_threth0.6.csv --testcsv ./dataset/TMQ/folds/TexturedDB_20_TestList_withnbPatchesPerVP_threth0.6.csv --root_refPatches Source/<N>VP --root_distPatches Distorted/<N>VP --target mos

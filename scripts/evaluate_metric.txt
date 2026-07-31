@@ -1,11 +1,11 @@
-python Light_GraphicsLPIPS_csv.py ^
-  -m TMQ_<N>VP_example ^
-  -v <N> ^
-  -vm <View_Method> ^
-  -rm <Render_Method> ^
-  -db TMQ ^
-  -mos ./dataset/TMQ/TMQ_MOS.csv ^
-  -testlist ./dataset/TMQ/folds/TexturedDB_20%_TestList_withnbPatchesPerVP_threth0.6.csv ^
-  --use_folds ^ # If you used folds for training
-  --src_root D:/RenderedDatasets/TMQ/<Render_Method>/<View_Method> ^
-  --use_gpu
+# Evaluate a Graphics-LPIPS checkpoint on TMQ (per-object metric CSVs).
+# Replace the <...> placeholders:
+#   <N>              number of views (e.g. 8)
+#   <View_Method>    e.g. Y_fixed_0.3   (output-path label)
+#   <Render_Method>  e.g. New_Render    (output-path label)
+#   <SRC_ROOT>       folder that contains Source/<N>VP and Distorted/<N>VP
+#                    (see README "Prepare the Dataset Layout").
+# Keep --use_folds only if the checkpoint was trained with folds (fold_k*/).
+# Single line: copy the whole command as-is (works in cmd, PowerShell and bash).
+
+python Light_GraphicsLPIPS_csv.py -m TMQ_<N>VP_example -v <N> -vm <View_Method> -rm <Render_Method> -db TMQ -mos ./dataset/TMQ/TMQ_MOS.csv -testlist ./dataset/TMQ/folds/TexturedDB_20_TestList_withnbPatchesPerVP_threth0.6.csv --use_folds --src_root <SRC_ROOT> --use_gpu

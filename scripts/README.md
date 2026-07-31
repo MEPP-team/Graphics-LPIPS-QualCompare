@@ -43,5 +43,6 @@ Expected rendered structure:
 
 The folder name is currently `patchs`, not `patches`.
 
-The `.txt` examples use Windows PowerShell line continuations. For `cmd.exe`,
-replace backticks with `^`; for Bash, replace them with `\`.
+Each `.txt` template is a single-line command (preceded by `#` comment lines
+explaining the `<...>` placeholders), so it can be copied and pasted as-is into
+`cmd`, PowerShell or Bash — no line-continuation characters to adapt.
