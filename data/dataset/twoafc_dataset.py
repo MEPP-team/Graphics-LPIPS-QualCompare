@@ -176,26 +176,16 @@ class TwoAFCDataset(Dataset):
         if not isinstance(dataroots, list):
             dataroots = [dataroots]
 
-        if Trainset:
-            shuffled_inputfile = []
-            print("SHUFFLINGGGGGGGGGGGG!!!")
-            dataset_root.mkdir(parents=True, exist_ok=True)
-            for idx, datafile in enumerate(dataroots):
-                out_path = str(dataset_root / f"Trainset_shuffled_{idx+1}.csv")
-                with open(datafile, "r") as r, open(out_path, "w") as w:
-                    lines = r.readlines()
-                    header, rows = lines[0], lines[1:]
-                    random.shuffle(rows)
-                    w.write(header + "".join(rows))
-                shuffled_inputfile.append(out_path)
-            dataroots = shuffled_inputfile
-
         stimuli_id = 0
         for csv_file_path in dataroots:
             with open(csv_file_path, newline="") as csvfile:
                 reader = csv.reader(csvfile)
-                next(reader)
-                for row in reader:
+                next(reader)  # skip header
+                rows = list(reader)
+                if Trainset:
+                    # Shuffle the stimulus order in memory each epoch (no file written).
+                    random.shuffle(rows)
+                for row in rows:
                     model = row[0]
                     stimulus = row[1]
                     mos = float(row[2])

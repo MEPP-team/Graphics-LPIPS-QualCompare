@@ -7,6 +7,8 @@ __pycache__/
 venv/
 
 out/
+# Training shuffle is now done in memory; this stale artifact must not be tracked
+dataset/Trainset_shuffled_*.csv
 checkpoints/*
 !checkpoints/TMQ_NR_8VP_yf03_kfolds/
 !checkpoints/TMQ_NR_8VP_yf03_kfolds/**
