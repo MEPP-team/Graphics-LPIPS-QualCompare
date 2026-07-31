@@ -88,7 +88,7 @@ set "USE_FOLDS=1"
 set "RUN_TRAINING=1"
 set "TRAIN_DATASETS=%REPO_ROOT%\dataset\TMQ\folds\TexturedDB_80_TrainList_withnbPatchesPerVP_threth0.6.csv"
 set "TRAIN_TESTCSV=%REPO_ROOT%\dataset\TMQ\folds\TexturedDB_20_TestList_withnbPatchesPerVP_threth0.6.csv"
-set "TRAIN_TARGET=judges"
+set "TRAIN_TARGET=mos"
 
 rem --- PRESET B: TSMD, 5-fold
 rem set "RUN_NAME=TSMD_5FOLD"
@@ -289,7 +289,7 @@ rem Training hyperparameters for the active preset.
 set "TRAIN_NAME=%MODEL_NAME%"
 if not defined TRAIN_DATASETS set "TRAIN_DATASETS=%REPO_ROOT%\dataset\TMQ\folds\TexturedDB_80_TrainList_withnbPatchesPerVP_threth0.6.csv"
 if not defined TRAIN_TESTCSV set "TRAIN_TESTCSV=%REPO_ROOT%\dataset\TMQ\folds\TexturedDB_20_TestList_withnbPatchesPerVP_threth0.6.csv"
-if not defined TRAIN_TARGET set "TRAIN_TARGET=judges"
+if not defined TRAIN_TARGET set "TRAIN_TARGET=mos"
 set "TRAIN_CHECKPOINTS_DIR=%REPO_ROOT%\checkpoints"
 set "TRAIN_ROOT_REFPATCHES=Source\%VIEWS%VP"
 set "TRAIN_ROOT_DISTPATCHES=Distorted\%VIEWS%VP"
@@ -521,7 +521,7 @@ if /I "%PRESET_NAME%"=="TMQ_5FOLD" (
   set "RUN_TRAINING=1"
   set "TRAIN_DATASETS=%REPO_ROOT%\dataset\TMQ\folds\TexturedDB_80_TrainList_withnbPatchesPerVP_threth0.6.csv"
   set "TRAIN_TESTCSV=%REPO_ROOT%\dataset\TMQ\folds\TexturedDB_20_TestList_withnbPatchesPerVP_threth0.6.csv"
-  set "TRAIN_TARGET=judges"
+  set "TRAIN_TARGET=mos"
   exit /b 0
 )
 
@@ -551,7 +551,8 @@ if /I "%PRESET_NAME%"=="TSMD_ZEROSHOT" (
   set "RENDER_METHOD=New_Render"
   set "MOS_CSV=.\dataset\TSMD\_TSMD_fulldataset.csv"
   set "TESTLIST_CSV=.\dataset\TSMD\_TSMD_20%%_TestList_scaled_old.csv"
-  set "USE_FOLDS=0"
+  set "USE_FOLDS=1"
+  set "TESTLIST_HAS_FOLDS=0"
   set "RUN_TRAINING=0"
   exit /b 0
 )
@@ -582,7 +583,8 @@ if /I "%PRESET_NAME%"=="SJTU_TMQA_ZEROSHOT" (
   set "RENDER_METHOD=0_0_light"
   set "MOS_CSV=.\dataset\SJTU-TMQA\SJTU-TMQA_MOS_1-5.csv"
   set "TESTLIST_CSV=.\dataset\SJTU-TMQA\SJTU-TMQA_MOS_normalized.csv"
-  set "USE_FOLDS=0"
+  set "USE_FOLDS=1"
+  set "TESTLIST_HAS_FOLDS=0"
   set "RUN_TRAINING=0"
   exit /b 0
 )
@@ -634,7 +636,8 @@ if /I "%PRESET_NAME%"=="BASICS_ZEROSHOT" (
   set "RENDER_METHOD=SP_960x960"
   set "MOS_CSV=.\dataset\BASICS\MOS_CI.csv"
   set "TESTLIST_CSV=.\dataset\BASICS\MOS_CI_01.csv"
-  set "USE_FOLDS=0"
+  set "USE_FOLDS=1"
+  set "TESTLIST_HAS_FOLDS=0"
   set "RUN_TRAINING=0"
   exit /b 0
 )
@@ -682,7 +685,8 @@ if /I "%PRESET_NAME%"=="WPC_ZEROSHOT" (
   set "RENDER_METHOD=SP_960x960"
   set "MOS_CSV=.\dataset\WPC\WPC_MOS.csv"
   set "TESTLIST_CSV=.\dataset\WPC\WPC_MOS.csv"
-  set "USE_FOLDS=0"
+  set "USE_FOLDS=1"
+  set "TESTLIST_HAS_FOLDS=0"
   set "RUN_TRAINING=0"
   exit /b 0
 )
@@ -713,7 +717,8 @@ if /I "%PRESET_NAME%"=="WPC2_ZEROSHOT" (
   set "RENDER_METHOD=New_Render"
   set "MOS_CSV=.\dataset\WPC2\WPC2.0_MOS.csv"
   set "TESTLIST_CSV=.\dataset\WPC2\WPC2.0_MOS.csv"
-  set "USE_FOLDS=0"
+  set "USE_FOLDS=1"
+  set "TESTLIST_HAS_FOLDS=0"
   set "RUN_TRAINING=0"
   exit /b 0
 )

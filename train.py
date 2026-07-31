@@ -186,6 +186,7 @@ def main():
     parser.add_argument('--from_scratch', action='store_true', help='model was initialized from scratch')
     parser.add_argument('--train_trunk', action='store_true', help='model trunk was trained/tuned')
     parser.add_argument('--train_plot', action='store_true', help='plot saving')
+    parser.add_argument('--overwrite', action='store_true', help='retrain folds whose checkpoint directory already exists (default: skip them)')
 
     opt = parser.parse_args()
     opt.batch_size = opt.npatches * opt.nInputImg
@@ -219,10 +220,14 @@ def main():
         else: 
             opt.save_dir = os.path.join(opt.checkpoints_dir,opt.name)
         if(not os.path.exists(opt.save_dir)):
-            os.mkdir(opt.save_dir)
-        elif opt.use_folds:
-            print('fold %d already exists, skipping...' % fold)
-            continue  # skip existing fold
+            os.makedirs(opt.save_dir, exist_ok=True)
+        elif opt.use_folds and not opt.overwrite:
+            print('[SKIP] fold k%d: checkpoint directory already exists (%s). '
+                  'Nothing was trained for this fold. Use --overwrite to retrain, '
+                  'or choose a different --name.' % (fold, opt.save_dir))
+            continue  # skip existing fold (no training performed)
+        elif opt.use_folds and opt.overwrite:
+            print('[OVERWRITE] fold k%d: retraining into existing directory %s' % (fold, opt.save_dir))
 
         Testset = opt.testcsv
         Testset_name, ext = os.path.splitext(Testset)
