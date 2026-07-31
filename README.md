@@ -45,7 +45,7 @@ pip install -r requirements.txt
 Clone the repository:
 
 ```bash
-git clone https://gitlab.liris.cnrs.fr/gcampagne/graphics-lpips-qualcompare
+git clone https://github.com/MEPP-team/Graphics-LPIPS-QualCompare.git
 cd Graphics-LPIPS-QualCompare
 ```
 
@@ -80,7 +80,7 @@ To fully use the updated workflow, this repository should be used together with 
 
 Companion repository:
 
-- `QualCompare`: https://gitlab.liris.cnrs.fr/gcampagne/qualcompare
+- `QualCompare`: https://github.com/MEPP-team/QualCompare
 
 In practice:
 
@@ -117,6 +117,83 @@ Important note:
 - the folder name is currently `patchs` in the codebase, not `patches`
 - `Light_GraphicsLPIPS_csv.py` expects `--src_root` to point to `<EXPERIMENT_ROOT>`
 - `train.py` expects `--src_root`, `--root_refPatches`, and `--root_distPatches` to match that rendered structure
+
+## Prepare the Dataset Layout
+
+The scripts expect each dataset to be reachable as `<SRC_ROOT>/Source/<N>VP/` and
+`<SRC_ROOT>/Distorted/<N>VP/` (see [Expected Rendered Structure](#expected-rendered-structure)).
+
+However, the published rendered dataset
+([qualcomparerendered](https://datasets.liris.cnrs.fr/qualcomparerendered-version1))
+extracts to a **flat, per-dataset** layout, without the `Source/<N>VP` wrapper:
+
+```text
+<DATASET_ROOT>/
+  TMQ_Circle_0.3_8VP_source/<REFERENCE_OBJECT>/{views, masks, patchs}
+  TMQ_Circle_0.3_8VP_distorted/<DISTORTED_OBJECT>/{views, masks}
+  ...
+  dataset_info.json
+```
+
+So, **before running training or evaluation**, expose each dataset in the expected
+layout. The helper script does this with directory junctions (Windows) or symlinks
+(Linux/macOS), so the (tens of GB of) images are **not copied**:
+
+Windows (PowerShell):
+
+```powershell
+scripts\prepare_dataset_layout.ps1 -DatasetRoot "D:\path\to\qualcomparerendered"
+```
+
+Linux/macOS:
+
+```bash
+scripts/prepare_dataset_layout.sh /path/to/qualcomparerendered
+```
+
+The script reads `dataset_info.json` (or falls back to the 5 known datasets) and
+creates `<DATASET_ROOT>/_run/<DB>/Source/<N>VP` and `.../Distorted/<N>VP` for each
+dataset, then prints the `--src_root` to use, e.g.:
+
+```text
+[ok] TMQ        --src_root "D:\path\to\qualcomparerendered\_run\TMQ"
+[ok] TSMD       --src_root "D:\path\to\qualcomparerendered\_run\TSMD"
+```
+
+Pass that path to the scripts, for example (TSMD, zero-shot with the shipped
+checkpoint):
+
+```bash
+python Light_GraphicsLPIPS_csv.py -m TMQ_NR_8VP_yf03_kfolds --use_folds -v 8 \
+  -vm Y_fixed_0.3 -rm New_Render -db TSMD \
+  -mos ./dataset/TSMD/_TSMD_fulldataset.csv \
+  -testlist ./dataset/TSMD/_TSMD_fulldataset.csv \
+  --src_root "D:\path\to\qualcomparerendered\_run\TSMD" --use_gpu
+```
+
+### For the `paper_revalidation` batch scripts
+
+The `.bat` presets build `SRC_ROOT` as
+`<QUALCOMPARE_OUT_ROOT>/<DB>/<RENDER_METHOD>/<VIEW_METHOD>`. Create that deeper
+layout with `-ForBat` (Windows) / `--forbat` (Linux), then export the root:
+
+```powershell
+scripts\prepare_dataset_layout.ps1 -DatasetRoot "D:\path\to\qualcomparerendered" -ForBat
+set QUALCOMPARE_OUT_ROOT=D:\path\to\qualcomparerendered\_run
+```
+
+```bash
+scripts/prepare_dataset_layout.sh /path/to/qualcomparerendered --forbat
+export QUALCOMPARE_OUT_ROOT=/path/to/qualcomparerendered/_run
+```
+
+See [paper_revalidation/README.md](paper_revalidation/README.md) for the batch workflow.
+
+To undo the junctions later (the source images are never touched):
+
+```powershell
+scripts\prepare_dataset_layout.ps1 -DatasetRoot "D:\path\to\qualcomparerendered" -Remove
+```
 
 ## Expected Local Resources
 

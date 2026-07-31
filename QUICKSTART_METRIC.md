@@ -8,7 +8,7 @@
 
 This page is the fastest way to run Graphics-LPIPS-QualCompare on rendered data produced by QualCompare.
 
-If your goal is mainly to reproduce the QualCompare revalidation for *Towards Reproducible Image-based 3D quality assessment: integrated software and new results*, start with [scripts/revalidate_table_qualcompare.bat](scripts/revalidate_table_qualcompare.bat) and the notes in [scripts/README.md](scripts/README.md).
+If your goal is mainly to reproduce the QualCompare revalidation for *Towards Reproducible Image-based 3D quality assessment: integrated software and new results*, start with [paper_revalidation/revalidate_table_qualcompare.bat](paper_revalidation/revalidate_table_qualcompare.bat) and the notes in [paper_revalidation/README.md](paper_revalidation/README.md).
 
 ---
 
@@ -111,4 +111,4 @@ This repository is designed to consume rendered outputs from QualCompare.
 For the bridge and paper-oriented reproduction notes on the QualCompare side, see:
 
 - `QualCompare/docs/graphics_lpips_bridge.md`
-- `QualCompare/docs/qomex_reproduction.md`
+- `QualCompare/docs/replication.md`

@@ -49,6 +49,30 @@ The rendered data must follow this structure:
 
 The folder name is `patchs`, matching the current codebase.
 
+## Prepare the rendered data layout
+
+The official rendered dataset
+([qualcomparerendered](https://datasets.liris.cnrs.fr/qualcomparerendered-version1))
+extracts to a **flat** per-dataset layout (`<NAME>_source/`, `<NAME>_distorted/`),
+which is **not** the `<DB>/<RENDER_METHOD>/<VIEW_METHOD>/Source/<N>VP` tree these
+batch scripts expect. Expose it first with the helper (directory junctions /
+symlinks — no copy), using its `.bat` mode:
+
+```cmd
+scripts\prepare_dataset_layout.ps1 -DatasetRoot "D:\path\to\qualcomparerendered" -ForBat
+```
+
+```bash
+scripts/prepare_dataset_layout.sh /path/to/qualcomparerendered --forbat
+```
+
+This creates `<DATASET_ROOT>/_run/<DB>/<RENDER_METHOD>/<VIEW_METHOD>/Source/<N>VP`
+(and `Distorted/<N>VP`) matching the presets below, then set
+`QUALCOMPARE_OUT_ROOT` to that `_run` folder (next section).
+
+See the main [README — Prepare the Dataset Layout](../README.md#prepare-the-dataset-layout)
+for details and for the direct-script layout (without `-ForBat`).
+
 ## Recommended Setup
 
 Set `QUALCOMPARE_OUT_ROOT` to the folder that contains the rendered dataset
