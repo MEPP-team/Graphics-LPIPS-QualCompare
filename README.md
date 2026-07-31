@@ -121,7 +121,19 @@ delete the junctions later.
 
 ## Usage
 
-All commands require a CUDA GPU (`--use_gpu`).
+### Quick check (two images)
+
+Verify the metric and the shipped checkpoint on two bundled example images (no
+dataset required; runs on CPU):
+
+```bash
+python GraphicsLpips_2imgs.py -p0 imgs/ex_ref.png -p1 imgs/ex_p0.png
+```
+
+It prints a Graphics-LPIPS distance in `[0, 1]` (~0.53 for the reference vs its
+heavily JPEG-compressed version).
+
+The dataset commands below require a CUDA GPU (`--use_gpu`).
 
 ### Evaluate a checkpoint
 

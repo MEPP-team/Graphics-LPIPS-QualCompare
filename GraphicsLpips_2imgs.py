@@ -4,7 +4,7 @@ import lpips
 parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('-p0','--path0', type=str, default='./imgs/ex_ref.png')
 parser.add_argument('-p1','--path1', type=str, default='./imgs/ex_p0.png')
-parser.add_argument('-m','--modelpath', type=str, default='./checkpoints/GraphicsLPIPS_FinalNetwork/10_net_.pth', help='location of model')
+parser.add_argument('-m','--modelpath', type=str, default='./checkpoints/TMQ_NR_8VP_yf03_kfolds/fold_k0/latest_net_.pth', help='location of model')
 parser.add_argument('-v','--version', type=str, default='0.1')
 parser.add_argument('--use_gpu', action='store_true', help='turn on flag to use GPU')
 

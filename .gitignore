@@ -19,6 +19,9 @@ checkpoints/*
 *.tif
 *.tiff
 *.pdf
+# Example images for the GraphicsLpips_2imgs.py sanity check (kept in the repo)
+!imgs/
+!imgs/*.png
 
 *.html
 *.htm
