@@ -65,11 +65,9 @@ if (-not (Test-Path -LiteralPath $DatasetRoot)) { throw "DatasetRoot not found: 
 if (-not $OutRoot -or $OutRoot -eq "") { $OutRoot = Join-Path $DatasetRoot "_run" }
 
 # RENDER_METHOD|VIEW_METHOD labels used by the paper_revalidation .bat presets.
-# NB: the two .bat files disagree on TSMD's view label (Y_fixed_0 in
-# revalidate_table, Y_fixed_0.3 in revalidate_fixed_baselines); both are created.
 $batLabels = @{
     "TMQ"       = @("New_Render|Y_fixed_0.3")
-    "TSMD"      = @("New_Render|Y_fixed_0", "New_Render|Y_fixed_0.3")
+    "TSMD"      = @("New_Render|Y_fixed_0.3")
     "SJTU-TMQA" = @("0_0_light|Y_fixed_0")
     "BASICS"    = @("SP_960x960|Y_fixed_0.3")
     "WPC"       = @("SP_960x960|Y_fixed_0.3")

@@ -41,11 +41,10 @@ maps=(
 )
 
 # DB -> "RENDER/VIEW[ RENDER/VIEW ...]" labels used by the paper_revalidation .bat presets.
-# NB: the two .bat files disagree on TSMD's view label; both are created.
 bat_labels() {
   case "$1" in
     TMQ)        echo "New_Render/Y_fixed_0.3" ;;
-    TSMD)       echo "New_Render/Y_fixed_0 New_Render/Y_fixed_0.3" ;;
+    TSMD)       echo "New_Render/Y_fixed_0.3" ;;
     SJTU-TMQA)  echo "0_0_light/Y_fixed_0" ;;
     BASICS)     echo "SP_960x960/Y_fixed_0.3" ;;
     WPC)        echo "SP_960x960/Y_fixed_0.3" ;;

@@ -93,7 +93,7 @@ python correlation_VP.py ^
 
 - If `Source/<N>VP` or `Distorted/<N>VP` is missing, verify `--src_root`.
 - If patch CSV files are not found, verify that `patchs/` exists under each reference object.
-- If model loading fails, verify that `./checkpoints/<MODEL_NAME>/latest_net_.pth` exists.
+- If model loading fails, verify the checkpoint weights exist: `./checkpoints/<MODEL>/latest_net_.pth` for a single model, or `./checkpoints/<MODEL>/fold_k*/latest_net_.pth` (run with `--use_folds`) for a k-fold checkpoint such as the shipped `TMQ_NR_8VP_yf03_kfolds`.
 - This workflow is CUDA-only and requires an NVIDIA GPU. If you get GPU errors, install a PyTorch build matching your CUDA version (see the README Installation section).
 
 ---
