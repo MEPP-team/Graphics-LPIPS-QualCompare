@@ -3,6 +3,15 @@
 Graphics-LPIPS-QualCompare is a fork of [Graphics-LPIPS](https://github.com/MEPP-team/Graphics-LPIPS), a perceptual quality metric for 3D graphics. Graphics-LPIPS-QualCompare aims at facilitating a controlled evaluation (training and testing) on any datasets, especially using multi-view renderings produced by the companion tool
 [QualCompare](https://github.com/MEPP-team/QualCompare).
 
+This repository accompanies the paper:
+
+> **Towards Reproducible Image-based 3D Quality Assessment: Integrated Software and New Results**
+> Guillaume Lavoué, Gautier Campagne, Florent Dupont
+> *Currently under review.*
+
+It provides the software, scripts, and configurations needed to reproduce the
+results reported in the paper.
+
 
 ## How the metric works
 
@@ -228,7 +237,9 @@ out/                        evaluation and correlation outputs (created at runti
 
 ## Citation
 
-Paper under review
+> **Towards Reproducible Image-based 3D Quality Assessment: Integrated Software and New Results**
+> Guillaume Lavoué, Gautier Campagne, Florent Dupont
+> *Currently under review.*
 
 ## License
 
