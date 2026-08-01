@@ -5,8 +5,8 @@ Graphics-LPIPS-QualCompare is a fork of [Graphics-LPIPS](https://github.com/MEPP
 
 This repository accompanies the paper:
 
-> **Rendering Matters: Reproducible Image-based Quality Assessment of 3D Meshes and Point Clouds with QualCompare**
-> Guillaume Lavoué, Gautier Campagne, Florent Dupont
+> **Rendering Matters: Reproducible Image-based Quality Assessment of 3D Meshes and Point Clouds with QualCompare**  
+> Guillaume Lavoué, Gautier Campagne, Florent Dupont  
 > *Currently under review.*
 
 It provides the software, scripts, and configurations needed to reproduce the
@@ -237,8 +237,8 @@ out/                        evaluation and correlation outputs (created at runti
 
 ## Citation
 
-> **Rendering Matters: Reproducible Image-based Quality Assessment of 3D Meshes and Point Clouds with QualCompare**
-> Guillaume Lavoué, Gautier Campagne, Florent Dupont
+> **Rendering Matters: Reproducible Image-based Quality Assessment of 3D Meshes and Point Clouds with QualCompare**  
+> Guillaume Lavoué, Gautier Campagne, Florent Dupont  
 > *Currently under review.*
 
 ## License
